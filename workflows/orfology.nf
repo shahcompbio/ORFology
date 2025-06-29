@@ -3,7 +3,7 @@
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { FASTQC                 } from '../modules/nf-core/fastqc/main'
+include { PGTOOLS_MERGERESULTS   } from '../modules/local/pgtools/mergeresults/main'
 include { MULTIQC                } from '../modules/nf-core/multiqc/main'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -27,7 +27,30 @@ workflow ORFOLOGY {
     //
     // MODULE: Run FastQC
     //
-    ch_samplesheet.view()
+    // ch_samplesheet.view()
+    ch_samplesheet
+        .first { meta, files ->
+            meta.quant == true
+        }
+        .set { quant_ch }
+    // quant_ch.view()
+    if (quant_ch.size() != 0) {
+        println("quantification from philosopher present, filtering for proteins with unique peptides")
+        // collect files from samplesheet
+        merge_input_ch = ch_samplesheet.collect(meta, fasta, philosopher -> )
+        merge_input_ch.view()
+        // ch_samplesheet
+        //     .collectFile(
+        //         name: "merge.csv",
+        //         seed: "sample,condition,fasta,protein_table\n",
+        //     ) { meta, fasta, philosopher ->
+        //         ["${meta.id},${meta.condition},${fasta}, ${philosopher}\n"]
+        //     }
+        //     .view()
+        // PGTOOLS_MERGERESULTS([[id: 'merge'], params.input])
+        // ch_versions = ch_versions.mix(PGTOOLS_MERGERESULTS.out.versions)
+        println("test")
+    }
     // FASTQC (
     //     ch_samplesheet
     // )
