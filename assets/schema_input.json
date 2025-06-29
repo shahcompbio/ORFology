@@ -7,20 +7,33 @@
     "items": {
         "type": "object",
         "properties": {
-            "id": {
+            "sample": {
                 "type": "string",
                 "pattern": "^\\S+$",
                 "errorMessage": "Sample name must be provided and cannot contain spaces",
                 "meta": ["id"]
             },
+            "condition": {
+                "type": "string",
+                "pattern": "^\\S+$",
+                "errorMessage": "condition name (e.g., control, cancer); cannot contain spaces",
+                "meta": ["condition"]
+            },
             "fasta": {
                 "type": "string",
                 "format": "file-path",
                 "exists": true,
-                "pattern": "^\\S+\\.f(ast)?a(\\.gz)?$",
+                "pattern": "^\\S+\\.(f(ast)?a|fas)(\\.gz)?$",
                 "errorMessage": "Fasta file for each sample must be provided, cannot contain spaces and must have extension '.fa.gz', '.fa', '.fasta', or '.fasta.gz'"
+            },
+            "protein_table": {
+                "type": "string",
+                "format": "file-path",
+                "exists": true,
+                "pattern": "^\\S+\\.(tsv)(\\.gz)?$",
+                "errorMessage": "Protein quantification for each sample from Philosopher, cannot contain spaces and must have extension '.tsv'"
             }
         },
-        "required": ["id", "fasta"]
+        "required": ["sample", "fasta"]
     }
 }
