@@ -24,12 +24,12 @@ workflow ORFOLOGY {
 
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
+    // ch_samplesheet.view()
     //
     // MODULE: Run FastQC
     //
-    // ch_samplesheet.view()
     ch_samplesheet
-        .first { meta, files ->
+        .first { meta, fasta, quant ->
             meta.quant == true
         }
         .set { quant_ch }
@@ -37,9 +37,17 @@ workflow ORFOLOGY {
     if (quant_ch.size() != 0) {
         println("quantification from philosopher present, filtering for proteins with unique peptides")
         // collect files from samplesheet
-        merge_input_ch = ch_samplesheet.collect(flat: false)
+        // ch_samplesheet.view()
+        merge_input_ch = ch_samplesheet
+            .collect(flat: false)
+            .map { sample ->
+                def meta_list = sample.collect { it[0] }
+                def fasta_list = sample.collect { it[1] }
+                def philosopher_list = sample.collect { it[2] }
+                tuple(meta_list, fasta_list, philosopher_list)
+            }
         merge_input_ch.view()
-        // PGTOOLS_MERGERESULTS([[id: 'merge'], params.input])
+        PGTOOLS_MERGERESULTS([id: 'merge'], merge_input_ch)
         // ch_versions = ch_versions.mix(PGTOOLS_MERGERESULTS.out.versions)
         println("test")
     }

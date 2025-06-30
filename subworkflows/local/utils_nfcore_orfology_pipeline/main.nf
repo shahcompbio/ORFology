@@ -73,19 +73,17 @@ workflow PIPELINE_INITIALISATION {
 
     Channel.fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json"))
         .map { meta, fasta, protein_table ->
+            def placeholderDir = "./.philosopher_placeholder"
+            new File(placeholderDir).mkdirs()
+            def pt_file
             if (!protein_table) {
-                return [meta.id, meta + [quant: false], [fasta], []]
+                pt_file = file("${placeholderDir}/${meta.id}_no_quant")
+                pt_file.text = ""
+                return [meta + [quant: false], fasta, pt_file]
             }
             else {
-                return [meta.id, meta + [quant: true], [fasta], [protein_table]]
+                return [meta + [quant: true], fasta, protein_table]
             }
-        }
-        .groupTuple()
-        .map { samplesheet ->
-            validateInputSamplesheet(samplesheet)
-        }
-        .map { meta, fastqs ->
-            return [meta, fastqs.flatten()]
         }
         .set { ch_samplesheet }
 

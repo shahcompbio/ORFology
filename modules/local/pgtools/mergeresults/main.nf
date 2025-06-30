@@ -6,10 +6,10 @@ process PGTOOLS_MERGERESULTS {
     // TODO nf-core: See section in main README for further information regarding finding and adding container addresses to the section below.
     conda "${moduleDir}/environment.yml"
     container "quay.io/shahlab_singularity/tcdo_pg_tools:0.0.7b0"
-    containerOptions "-v /Volumes/kentsis:/Volumes/kentsis"
 
     input:
-    tuple val(meta), path('.fasta', arity: "1..*"), path('.tsv', arity: "1..*")
+    val meta
+    tuple val(meta_list), path(fasta_list, stageAs: "fasta??", arity: "1..*"), path(philosopher_list, stageAs: "quant??", arity: "1..*")
 
     output:
     tuple val(meta), path("info_table.tsv"), emit: info_table
@@ -24,8 +24,25 @@ process PGTOOLS_MERGERESULTS {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def header = """
-    # tcdo_pg_tools merge-pg-results -i samplesheet.csv --upset
+    // build samplesheet from input lists
+    def header = "fasta,protein_table,sample,condition"
+    def rows = (0..<meta_list.size()).collect { i ->
+        def meta1 = meta_list[i]
+        def fasta = fasta_list[i]
+        def protein_table = meta_list[i].quant != false ? philosopher_list[i] : ''
+        "${fasta.name},${protein_table},${meta1.id},${meta1.condition}"
+    }
+    def csv_lines = ([header] + rows).join("\n")
+    // note: escaping newline for bash string
+    """
+    echo \"${csv_lines}\" > samplesheet.csv
+
+    # debug
+    echo '--- samplesheet.csv ---'
+    cat samplesheet.csv
+    echo '-----------------------'
+
+    tcdo_pg_tools merge-pg-results -i samplesheet.csv --upset
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         pgtools: \$(tcdo_pg_tools --version)
