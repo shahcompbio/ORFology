@@ -5,7 +5,7 @@ source $HOME/miniforge3/bin/activate nf-core
 outdir=$HOME/Library/CloudStorage/OneDrive-MemorialSloanKetteringCancerCenter/AMLproteogenomics/APS032_ORFology_test/mini_fa_results
 pipelinedir=$HOME/VSCodeProjects/tcdo-orfology
 samplesheet=$HOME/Library/CloudStorage/OneDrive-MemorialSloanKetteringCancerCenter/AMLproteogenomics/APS032_ORFology_test/minifasta_test.csv
-blast_db=/Users/preskaa/Library/CloudStorage/OneDrive-MemorialSloanKetteringCancerCenter/AMLproteogenomics/APS032_ORFology_test/2025-02-06-reviewed-isoforms-UP000005640.fas
+blast_db=/Users/preskaa/Library/CloudStorage/OneDrive-MemorialSloanKetteringCancerCenter/AMLproteogenomics/APS032_ORFology_test/mini_swissprot.100.fa
 mkdir -p ${outdir}
 cd ${outdir}
 
