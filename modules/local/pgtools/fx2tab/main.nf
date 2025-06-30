@@ -1,5 +1,5 @@
-// merge across multiple proteomegenerator results with quant from Fragpipe/Philosopher
-process PGTOOLS_MERGERESULTS {
+// convert fasta to tabular format with tcdo_pg_tools
+process PGTOOLS_FX2TAB {
     tag "${meta.id}"
     label 'process_single'
 
@@ -8,13 +8,12 @@ process PGTOOLS_MERGERESULTS {
     container "quay.io/shahlab_singularity/tcdo_pg_tools:0.0.7b0"
 
     input:
-    val meta
-    tuple val(meta_list), path(fasta_list, stageAs: "fasta??", arity: "1..*"), path(philosopher_list, stageAs: "quant??", arity: "1..*")
+    tuple val(meta), path(fasta), path(philosopher_quant)
 
     output:
+    // TODO nf-core: Named file extensions MUST be emitted for ALL output channels
     tuple val(meta), path("info_table.tsv"), emit: info_table
-    tuple val(meta), path("merged.fasta"), emit: merged_fasta
-    tuple val(meta), path("upset_plot.svg"), emit: upset_plot
+    // TODO nf-core: List additional required output channels/values here
     path "versions.yml", emit: versions
 
     when:
@@ -23,24 +22,12 @@ process PGTOOLS_MERGERESULTS {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    // build samplesheet from input lists
-    def header = "fasta,protein_table,sample,condition"
-    def rows = (0..<meta_list.size()).collect { i ->
-        def meta1 = meta_list[i]
-        def fasta = fasta_list[i]
-        def protein_table = meta_list[i].quant != false ? philosopher_list[i] : ''
-        "${fasta.name},${protein_table},${meta1.id},${meta1.condition}"
-    }
-    def csv_lines = ([header] + rows).join("\n")
-    // note: escaping newline for bash string
     """
-    echo \"${csv_lines}\" > samplesheet.csv
-
-    tcdo_pg_tools merge-pg-results -i samplesheet.csv --upset
-    # capture version and write YAML in one go, no standalone ver= line
-    ( read -r ver < <(tcdo_pg_tools --version) \
-    && printf '%s:\\n  tcdo_pg_tools: \"%s\"\\n' \"${task.process}\" \"\$ver\" \
-    ) > versions.yml
+    fx2tab.py ${fasta} ${meta.id}
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        pandas: \$(python -c 'import pandas as pd; print(pd.__version__)')
+    END_VERSIONS
     """
 
     stub:

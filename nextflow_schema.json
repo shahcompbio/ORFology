@@ -241,5 +241,11 @@
         {
             "$ref": "#/$defs/generic_options"
         }
-    ]
+    ],
+    "properties": {
+        "skip_merge": {
+            "type": "boolean",
+            "description": "skip merging of protein fasta from samplesheet"
+        }
+    }
 }

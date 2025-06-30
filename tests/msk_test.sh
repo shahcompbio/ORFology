@@ -13,4 +13,4 @@ nextflow run ${pipelinedir}/main.nf \
     -work-dir ${outdir}/work \
     --outdir ${outdir} \
     --input ${samplesheet} \
-   -resume
+  # -resume

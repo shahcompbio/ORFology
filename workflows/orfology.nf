@@ -4,6 +4,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 include { PGTOOLS_MERGERESULTS   } from '../modules/local/pgtools/mergeresults/main'
+include { PGTOOLS_FX2TAB         } from '../modules/local/pgtools/fx2tab/main'
 include { MULTIQC                } from '../modules/nf-core/multiqc/main'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -24,33 +25,44 @@ workflow ORFOLOGY {
 
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
-    // ch_samplesheet.view()
-    //
-    // MODULE: Run FastQC
-    //
-    ch_samplesheet
-        .first { meta, fasta, quant ->
-            meta.quant == true
-        }
-        .set { quant_ch }
-    // quant_ch.view()
-    if (quant_ch.size() != 0) {
-        println("quantification from philosopher present, filtering for proteins with unique peptides")
-        // collect files from samplesheet
-        // ch_samplesheet.view()
-        merge_input_ch = ch_samplesheet
-            .collect(flat: false)
-            .map { sample ->
-                def meta_list = sample.collect { it[0] }
-                def fasta_list = sample.collect { it[1] }
-                def philosopher_list = sample.collect { it[2] }
-                tuple(meta_list, fasta_list, philosopher_list)
-            }
-        merge_input_ch.view()
-        PGTOOLS_MERGERESULTS([id: 'merge'], merge_input_ch)
-        // ch_versions = ch_versions.mix(PGTOOLS_MERGERESULTS.out.versions)
-        println("test")
+    // skip merge if only one sample in samplesheet
+    samples = ch_samplesheet.collect(flat: false)
+    if (samples.size() == 1 || params.skip_merge == true) {
+        // set skip_merge to true if it is not already
+        params.skip_merge = true
+        println("Only one sample in samplesheet, skipping merge step")
+        ch_fasta = ch_samplesheet
+        // convert fasta to tabular format
+        PGTOOLS_FX2TAB(ch_fasta)
+        ch_versions = ch_versions.mix(PGTOOLS_MERGERESULTS.out.versions)
     }
+    // merge multiple fasta
+    if (!params.skip_merge) {
+        ch_samplesheet
+            .first { meta, fasta, quant ->
+                meta.quant == true
+            }
+            .set { quant_ch }
+        // quant_ch.view()
+        if (quant_ch.size() != 0) {
+            println("quantification from philosopher present, filtering for proteins with unique peptides")
+            // collect files from samplesheet
+            // ch_samplesheet.view()
+            merge_input_ch = ch_samplesheet
+                .collect(flat: false)
+                .map { sample ->
+                    def meta_list = sample.collect { it[0] }
+                    def fasta_list = sample.collect { it[1] }
+                    def philosopher_list = sample.collect { it[2] }
+                    tuple(meta_list, fasta_list, philosopher_list)
+                }
+            PGTOOLS_MERGERESULTS([id: 'merge'], merge_input_ch)
+            ch_versions = ch_versions.mix(PGTOOLS_MERGERESULTS.out.versions)
+            // fetch output of merge
+            ch_fasta = PGTOOLS_MERGERESULTS.out.merged_fasta
+        }
+    }
+
     // FASTQC (
     //     ch_samplesheet
     // )
