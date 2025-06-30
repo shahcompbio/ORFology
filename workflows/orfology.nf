@@ -11,6 +11,7 @@ include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pi
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_orfology_pipeline'
 
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN MAIN WORKFLOW
@@ -26,18 +27,22 @@ workflow ORFOLOGY {
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
     // skip merge if only one sample in samplesheet
-    samples = ch_samplesheet.collect(flat: false)
-    if (samples.size() == 1 || params.skip_merge == true) {
-        // set skip_merge to true if it is not already
-        params.skip_merge = true
+    // determine number of samples
+    def lines = file(params.input)
+        .readLines()
+        .findAll { it && !it.startsWith('#') }
+
+    def sampleList = (lines.size() > 1 ? lines[1..-1] : [])
+    println("Found ${sampleList.size()} samples")
+    if (params.skip_merge || sampleList.size() == 1) {
         println("Only one sample in samplesheet, skipping merge step")
         ch_fasta = ch_samplesheet
         // convert fasta to tabular format
         PGTOOLS_FX2TAB(ch_fasta)
-        ch_versions = ch_versions.mix(PGTOOLS_MERGERESULTS.out.versions)
+        ch_versions = ch_versions.mix(PGTOOLS_FX2TAB.out.versions)
     }
-    // merge multiple fasta
-    if (!params.skip_merge) {
+    else {
+        // merge multiple sample
         ch_samplesheet
             .first { meta, fasta, quant ->
                 meta.quant == true
