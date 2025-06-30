@@ -37,16 +37,8 @@ workflow ORFOLOGY {
     if (quant_ch.size() != 0) {
         println("quantification from philosopher present, filtering for proteins with unique peptides")
         // collect files from samplesheet
-        merge_input_ch = ch_samplesheet.collect(meta, fasta, philosopher -> )
+        merge_input_ch = ch_samplesheet.collect(flat: false)
         merge_input_ch.view()
-        // ch_samplesheet
-        //     .collectFile(
-        //         name: "merge.csv",
-        //         seed: "sample,condition,fasta,protein_table\n",
-        //     ) { meta, fasta, philosopher ->
-        //         ["${meta.id},${meta.condition},${fasta}, ${philosopher}\n"]
-        //     }
-        //     .view()
         // PGTOOLS_MERGERESULTS([[id: 'merge'], params.input])
         // ch_versions = ch_versions.mix(PGTOOLS_MERGERESULTS.out.versions)
         println("test")

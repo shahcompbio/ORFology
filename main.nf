@@ -13,7 +13,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { ORFOLOGY  } from './workflows/orfology'
+include { ORFOLOGY                } from './workflows/orfology'
 include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_orfology_pipeline'
 include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_orfology_pipeline'
 include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_orfology_pipeline'
@@ -39,7 +39,6 @@ params.fasta = getGenomeAttribute('fasta')
 // WORKFLOW: Run main analysis pipeline depending on type of input
 //
 workflow TCDO_ORFOLOGY {
-
     take:
     samplesheet // channel: samplesheet read in from --input
 
@@ -48,9 +47,10 @@ workflow TCDO_ORFOLOGY {
     //
     // WORKFLOW: Run pipeline
     //
-    ORFOLOGY (
+    ORFOLOGY(
         samplesheet
     )
+
     emit:
     multiqc_report = ORFOLOGY.out.multiqc_report // channel: /path/to/multiqc_report.html
 }
@@ -61,42 +61,34 @@ workflow TCDO_ORFOLOGY {
 */
 
 workflow {
-
-    main:
     //
     // SUBWORKFLOW: Run initialisation tasks
     //
-    PIPELINE_INITIALISATION (
+    PIPELINE_INITIALISATION(
         params.version,
         params.validate_params,
         params.monochrome_logs,
         args,
         params.outdir,
-        params.input
+        params.input,
     )
 
     //
     // WORKFLOW: Run main workflow
     //
-    TCDO_ORFOLOGY (
+    TCDO_ORFOLOGY(
         PIPELINE_INITIALISATION.out.samplesheet
     )
     //
     // SUBWORKFLOW: Run completion tasks
     //
-    PIPELINE_COMPLETION (
+    PIPELINE_COMPLETION(
         params.email,
         params.email_on_fail,
         params.plaintext_email,
         params.outdir,
         params.monochrome_logs,
         params.hook_url,
-        TCDO_ORFOLOGY.out.multiqc_report
+        TCDO_ORFOLOGY.out.multiqc_report,
     )
 }
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    THE END
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/

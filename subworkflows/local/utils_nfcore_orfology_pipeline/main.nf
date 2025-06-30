@@ -74,10 +74,10 @@ workflow PIPELINE_INITIALISATION {
     Channel.fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json"))
         .map { meta, fasta, protein_table ->
             if (!protein_table) {
-                return [meta.id, meta + [quant: false], [fasta]]
+                return [meta.id, meta + [quant: false], [fasta], []]
             }
             else {
-                return [meta.id, meta + [quant: true], [fasta, protein_table]]
+                return [meta.id, meta + [quant: true], [fasta], [protein_table]]
             }
         }
         .groupTuple()

@@ -9,8 +9,7 @@ process PGTOOLS_MERGERESULTS {
     containerOptions "-v /Volumes/kentsis:/Volumes/kentsis"
 
     input:
-    tuple val(meta), path("samplesheet.csv")
-    tuple val(meta)
+    tuple val(meta), path('.fasta', arity: "1..*"), path('.tsv', arity: "1..*")
 
     output:
     tuple val(meta), path("info_table.tsv"), emit: info_table
@@ -26,7 +25,7 @@ process PGTOOLS_MERGERESULTS {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     def header = """
-    tcdo_pg_tools merge-pg-results -i samplesheet.csv --upset
+    # tcdo_pg_tools merge-pg-results -i samplesheet.csv --upset
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         pgtools: \$(tcdo_pg_tools --version)
