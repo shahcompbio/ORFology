@@ -246,6 +246,10 @@
         "skip_merge": {
             "type": "boolean",
             "description": "skip merging of protein fasta from samplesheet"
+        },
+        "blast_db": {
+            "type": "string",
+            "description": "path to protein fasta  we will run diamond blast against"
         }
     }
 }

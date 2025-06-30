@@ -5,6 +5,10 @@
 */
 include { PGTOOLS_MERGERESULTS   } from '../modules/local/pgtools/mergeresults/main'
 include { PGTOOLS_FX2TAB         } from '../modules/local/pgtools/fx2tab/main'
+include { DIAMOND_MAKEDB         } from '../modules/nf-core/diamond/makedb/main'
+include { DIAMOND_BLASTP         } from '../modules/nf-core/diamond/blastp/main'
+include { CAT_CAT                } from '../modules/nf-core/cat/cat/main'
+include { DIAMOND_CLUSTER        } from '../modules/nf-core/diamond/cluster/main'
 include { MULTIQC                } from '../modules/nf-core/multiqc/main'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -36,9 +40,9 @@ workflow ORFOLOGY {
     println("Found ${sampleList.size()} samples")
     if (params.skip_merge || sampleList.size() == 1) {
         println("Only one sample in samplesheet, skipping merge step")
-        ch_fasta = ch_samplesheet
+        ch_fasta = ch_samplesheet.map { meta, fasta, quant -> tuple([id: meta.id], fasta) }
         // convert fasta to tabular format
-        PGTOOLS_FX2TAB(ch_fasta)
+        PGTOOLS_FX2TAB(ch_samplesheet)
         ch_versions = ch_versions.mix(PGTOOLS_FX2TAB.out.versions)
     }
     else {
@@ -67,12 +71,21 @@ workflow ORFOLOGY {
             ch_fasta = PGTOOLS_MERGERESULTS.out.merged_fasta
         }
     }
-
-    // FASTQC (
-    //     ch_samplesheet
-    // )
-    // ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect { it[1] })
-    // ch_versions = ch_versions.mix(FASTQC.out.versions.first())
+    // prepare diamond database for diamond blast
+    DIAMOND_MAKEDB([[id: 'db_prep'], params.blast_db], [], [], [])
+    ch_versions = ch_versions.mix(DIAMOND_MAKEDB.out.versions)
+    DIAMOND_BLASTP(ch_fasta, DIAMOND_MAKEDB.out.db, 6, [])
+    ch_versions = ch_versions.mix(DIAMOND_BLASTP.out.versions)
+    cat_ch = ch_fasta.map { meta, fasta -> tuple(meta, [fasta, params.blast_db]) }
+    cat_ch.view()
+    CAT_CAT(cat_ch)
+    ch_versions = ch_versions.mix(CAT_CAT.out.versions)
+    DIAMOND_CLUSTER(CAT_CAT.out.file_out)
+    ch_versions = ch_versions.mix(DIAMOND_CLUSTER.out.versions)
+    // notes to self:
+    // incorporate gget
+    // incorporate pfam
+    // incorporate elm
 
     //
     // Collate and save software versions
