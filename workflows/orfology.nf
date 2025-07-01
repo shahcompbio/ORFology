@@ -9,6 +9,7 @@ include { DIAMOND_MAKEDB         } from '../modules/nf-core/diamond/makedb/main'
 include { DIAMOND_BLASTP         } from '../modules/nf-core/diamond/blastp/main'
 include { CAT_CAT                } from '../modules/nf-core/cat/cat/main'
 include { DIAMOND_CLUSTER        } from '../modules/nf-core/diamond/cluster/main'
+include { DIAMOND_REALIGN        } from '../modules/local/diamond/realign/main'
 include { MULTIQC                } from '../modules/nf-core/multiqc/main'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -77,11 +78,12 @@ workflow ORFOLOGY {
     DIAMOND_BLASTP(ch_fasta, DIAMOND_MAKEDB.out.db, 6, [])
     ch_versions = ch_versions.mix(DIAMOND_BLASTP.out.versions)
     cat_ch = ch_fasta.map { meta, fasta -> tuple(meta, [fasta, params.blast_db]) }
-    cat_ch.view()
     CAT_CAT(cat_ch)
     ch_versions = ch_versions.mix(CAT_CAT.out.versions)
     DIAMOND_CLUSTER(CAT_CAT.out.file_out)
     ch_versions = ch_versions.mix(DIAMOND_CLUSTER.out.versions)
+    realign_ch = CAT_CAT.out.file_out.join(DIAMOND_CLUSTER.out.tsv)
+    DIAMOND_REALIGN(realign_ch)
     // notes to self:
     // incorporate gget
     // incorporate pfam
