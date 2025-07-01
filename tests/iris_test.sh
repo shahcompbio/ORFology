@@ -24,4 +24,5 @@ nextflow run shahcompbio/orfology -r main -latest \
     --outdir ${outdir} \
     --input ${samplesheet} \
     --blast_db ${blast_db} \
+    -N preskaa@mskcc.org \
     -resume
