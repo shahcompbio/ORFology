@@ -24,9 +24,13 @@ process DIAMOND_REALIGN {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
+    def mem = task.memory.toKilo() + 'K'
+    def memarg = "-M ${mem}"
     """
     diamond realign \\
         ${args} \\
+        ${memarg} \\
+        -p ${task.cpus} \\
         -d protein.fa \\
         --clusters clusters.tsv \\
         -o ${meta.id}.aln.tsv \\
