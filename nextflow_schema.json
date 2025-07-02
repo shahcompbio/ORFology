@@ -226,6 +226,32 @@
                     "hidden": true
                 }
             }
+        },
+        "diamond_blast": {
+            "title": "Diamond blast",
+            "type": "object",
+            "description": "Parameters for diamond blast",
+            "default": "",
+            "properties": {
+                "blast_db": {
+                    "type": "string",
+                    "description": "path to protein fasta  to run diamond blast against non-uniprot databases"
+                },
+                "uniprot_proteome": {
+                    "type": "string",
+                    "description": "download latest version of UniProt to blast against",
+                    "default": "UP000005640"
+                },
+                "isoforms": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Allows isoform sequences to be added to the download"
+                },
+                "reviewed": {
+                    "type": "boolean",
+                    "description": "Download only reviewed sequences from Swiss-Prot"
+                }
+            }
         }
     },
     "allOf": [
@@ -240,16 +266,15 @@
         },
         {
             "$ref": "#/$defs/generic_options"
+        },
+        {
+            "$ref": "#/$defs/diamond_blast"
         }
     ],
     "properties": {
         "skip_merge": {
             "type": "boolean",
             "description": "skip merging of protein fasta from samplesheet"
-        },
-        "blast_db": {
-            "type": "string",
-            "description": "path to protein fasta  we will run diamond blast against"
         }
     }
 }

@@ -5,11 +5,9 @@
 */
 include { PGTOOLS_MERGERESULTS   } from '../modules/local/pgtools/mergeresults/main'
 include { PGTOOLS_FX2TAB         } from '../modules/local/pgtools/fx2tab/main'
+include { PHILOSOPHER_DATABASE   } from '../modules/local/philosopher/database/main'
 include { DIAMOND_MAKEDB         } from '../modules/nf-core/diamond/makedb/main'
 include { DIAMOND_BLASTP         } from '../modules/nf-core/diamond/blastp/main'
-include { CAT_CAT                } from '../modules/nf-core/cat/cat/main'
-include { DIAMOND_CLUSTER        } from '../modules/nf-core/diamond/cluster/main'
-include { DIAMOND_REALIGN        } from '../modules/local/diamond/realign/main'
 include { MULTIQC                } from '../modules/nf-core/multiqc/main'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -73,17 +71,26 @@ workflow ORFOLOGY {
         }
     }
     // prepare diamond database for diamond blast
-    DIAMOND_MAKEDB([[id: 'db_prep'], params.blast_db], [], [], [])
+    if (!params.blast_db) {
+        PHILOSOPHER_DATABASE([id: params.uniprot_proteome], params.reviewed, params.isoforms)
+        blast_fasta = PHILOSOPHER_DATABASE.out.fasta
+        ch_versions = ch_versions.mix(PHILOSOPHER_DATABASE.out.versions)
+    }
+    else {
+        blast_fasta = [[id: 'db_prep'], blast_fasta]
+    }
+    DIAMOND_MAKEDB(blast_fasta, [], [], [])
     ch_versions = ch_versions.mix(DIAMOND_MAKEDB.out.versions)
     DIAMOND_BLASTP(ch_fasta, DIAMOND_MAKEDB.out.db, 6, [])
     ch_versions = ch_versions.mix(DIAMOND_BLASTP.out.versions)
-    cat_ch = ch_fasta.map { meta, fasta -> tuple(meta, [fasta, params.blast_db]) }
-    CAT_CAT(cat_ch)
-    ch_versions = ch_versions.mix(CAT_CAT.out.versions)
-    DIAMOND_CLUSTER(CAT_CAT.out.file_out)
-    ch_versions = ch_versions.mix(DIAMOND_CLUSTER.out.versions)
-    realign_ch = CAT_CAT.out.file_out.join(DIAMOND_CLUSTER.out.tsv)
-    DIAMOND_REALIGN(realign_ch)
+    // skip this for now, will revisit later
+    // cat_ch = ch_fasta.map { meta, fasta -> tuple(meta, [fasta, params.blast_db]) }
+    // CAT_CAT(cat_ch)
+    // ch_versions = ch_versions.mix(CAT_CAT.out.versions)
+    // DIAMOND_CLUSTER(CAT_CAT.out.file_out)
+    // ch_versions = ch_versions.mix(DIAMOND_CLUSTER.out.versions)
+    // realign_ch = CAT_CAT.out.file_out.join(DIAMOND_CLUSTER.out.tsv)
+    // DIAMOND_REALIGN(realign_ch)
     // notes to self:
     // incorporate gget
     // incorporate pfam
