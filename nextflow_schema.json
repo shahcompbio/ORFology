@@ -275,6 +275,10 @@
         "skip_merge": {
             "type": "boolean",
             "description": "skip merging of protein fasta from samplesheet"
+        },
+        "categorize_proteins": {
+            "type": "boolean",
+            "description": "Classify proteins as non-canonical vs canonical based on gene annotation"
         }
     }
 }
