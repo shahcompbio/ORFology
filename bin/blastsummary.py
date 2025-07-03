@@ -57,7 +57,7 @@ fig = px.histogram(noncanon,
                    color="category", marginal="rug", # can be `box`, `violin`
                    width=900,   # width in pixels
                    height=600,   # height in pixels
-                   color_discrete_sequence=custom_palette[0:2],
+                   color_discrete_sequence=custom_palette[0:3],
                    hover_data=noncanon.columns)
 
 # Add vertical line at log10(bitscore) = 2 (i.e., bitscore = 100)
@@ -68,14 +68,6 @@ fig.add_vline(
     line_color=custom_palette[3],
     annotation_text="S < 100 (weak alignment)",
     annotation_position="top right"
-)
-fig.add_vline(
-    x=1,
-    line_width=2,
-    line_dash="dash",
-    line_color=custom_palette[4],
-    annotation_text="no blast match",
-    annotation_position="top left"
 )
 fig.update_traces(opacity=0.75)
 fig.update_layout(barmode="overlay")

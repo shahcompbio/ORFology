@@ -31,9 +31,10 @@ process BLASTSUMMARY {
         ${args}
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        pandas: python -c "import pandas; print(pandas.__version__)")
-        numpy: python -c "import numpy; print(numpy.__version__)")
-        plotly: python -c "import plotly; print(plotly.__version__)")
+        python: \$(python --version | sed 's/Python //g')
+        pandas: \$(python -c "import pandas; print(pandas.__version__)")
+        numpy: \$(python -c "import numpy; print(numpy.__version__)")
+        plotly: \$(python -c "import plotly; print(plotly.__version__)")
     END_VERSIONS
     """
 
