@@ -12,8 +12,6 @@ protein_name = sys.argv[3]
 info_df = pd.read_csv(info_path, sep="\t")
 # sort into categories
 categories = []
-protein_id = "protein_ids"
-protein_name = "protein_name"
 for _, row in info_df.iterrows():
     if row[protein_id].startswith("sp"):
         categories.append("SwissProt")
@@ -27,6 +25,7 @@ for _, row in info_df.iterrows():
         categories.append("Other")
 info_df["category"] = categories
 # count number of proteins in each category
+info_df = info_df.drop_duplicates()
 counts = info_df.groupby("category").count()
 counts = counts.sort_values(by="sequence", ascending=False)
 # plot counts

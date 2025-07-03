@@ -3,17 +3,18 @@
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { PGTOOLS_MERGERESULTS   } from '../modules/local/pgtools/mergeresults/main'
-include { PGTOOLS_FX2TAB         } from '../modules/local/pgtools/fx2tab/main'
-include { PHILOSOPHER_DATABASE   } from '../modules/local/philosopher/database/main'
-include { DIAMOND_MAKEDB         } from '../modules/nf-core/diamond/makedb/main'
-include { DIAMOND_BLASTP         } from '../modules/nf-core/diamond/blastp/main'
-include { CLASSIFYPROTEINS       } from '../modules/local/classifyproteins/main'
-include { MULTIQC                } from '../modules/nf-core/multiqc/main'
-include { paramsSummaryMap       } from 'plugin/nf-schema'
-include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_orfology_pipeline'
+include { PGTOOLS_MERGERESULTS     } from '../modules/local/pgtools/mergeresults/main'
+include { PGTOOLS_FX2TAB ; PGTOOLS_FX2TAB as FX2TAB } from '../modules/local/pgtools/fx2tab/main'
+include { PHILOSOPHER_DATABASE     } from '../modules/local/philosopher/database/main'
+include { DIAMOND_MAKEDB           } from '../modules/nf-core/diamond/makedb/main'
+include { DIAMOND_BLASTP           } from '../modules/nf-core/diamond/blastp/main'
+include { CLASSIFYPROTEINS         } from '../modules/local/classifyproteins/main'
+include { BLASTSUMMARY             } from '../modules/local/blastsummary/main'
+include { MULTIQC                  } from '../modules/nf-core/multiqc/main'
+include { paramsSummaryMap         } from 'plugin/nf-schema'
+include { paramsSummaryMultiqc     } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { softwareVersionsToYAML   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { methodsDescriptionText   } from '../subworkflows/local/utils_nfcore_orfology_pipeline'
 
 
 /*
@@ -91,6 +92,13 @@ workflow ORFOLOGY {
     ch_versions = ch_versions.mix(DIAMOND_MAKEDB.out.versions)
     DIAMOND_BLASTP(ch_fasta, DIAMOND_MAKEDB.out.db, 6, [])
     ch_versions = ch_versions.mix(DIAMOND_BLASTP.out.versions)
+    // convert fastas to tabular format to pick out proteins missing from blast search
+    FX2TAB(ch_fasta.map { meta, fasta -> tuple(meta, fasta, []) })
+    ch_versions = ch_versions.mix(FX2TAB.out.versions)
+    // summarize blast results
+    summary_ch = DIAMOND_BLASTP.out.txt.combine(FX2TAB.out.info_table, by: 0)
+    BLASTSUMMARY(summary_ch)
+    ch_versions = ch_versions.mix(BLASTSUMMARY.out.versions)
     // skip this for now, will revisit later
     // cat_ch = ch_fasta.map { meta, fasta -> tuple(meta, [fasta, params.blast_db]) }
     // CAT_CAT(cat_ch)

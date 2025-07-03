@@ -1,19 +1,19 @@
-// download fasta files from uniprot with philosopher
-process PHILOSOPHER_DATABASE {
-    tag "${meta.id}_download"
+//summarize and plot diamond blast results
+process BLASTSUMMARY {
+    tag "${meta.id}"
     label 'process_single'
 
+    // TODO nf-core: See section in main README for further information regarding finding and adding container addresses to the section below.
     conda "${moduleDir}/environment.yml"
-    container "docker.io/fcyucn/fragpipe:23.1"
+    container "quay.io/shahlab_singularity/plotly_pandas:v250702"
 
     input:
-    val meta
-    val reviewed
-    val isoforms
+    tuple val(meta), path("blast_results.txt"), path("blast_fasta.tsv")
 
     output:
     // TODO nf-core: Named file extensions MUST be emitted for ALL output channels
-    tuple val(meta), path("*.fas"), emit: fasta
+    tuple val(meta), path("*.html"), emit: html
+    tuple val(meta), path("*.tsv"), emit: tsv
     // TODO nf-core: List additional required output channels/values here
     path "versions.yml", emit: versions
 
@@ -23,16 +23,17 @@ process PHILOSOPHER_DATABASE {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def reviewed_arg = reviewed == true ? '--reviewed' : ''
-    def isoforms_arg = isoforms == true ? '--isoform' : ''
-    def philosopher = '/fragpipe_bin/fragpipe-23.1/fragpipe-23.1/tools/Philosopher/philosopher-v5.1.2'
     """
-    ${philosopher} workspace --init --nocheck
-    ${philosopher} database --id ${meta.id} --nodecoys ${reviewed_arg} ${isoforms_arg} ${args}
-    ${philosopher} workspace --clean --nocheck
+    blastsummary.py \\
+        blast_results.txt \\
+        blast_fasta.tsv \\
+        ${meta.id}.diamond_blastp.annotated.tsv \\
+        ${args}
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        philosopher: 5.1.2
+        pandas: python -c "import pandas; print(pandas.__version__)")
+        numpy: python -c "import numpy; print(numpy.__version__)")
+        plotly: python -c "import plotly; print(plotly.__version__)")
     END_VERSIONS
     """
 
@@ -49,7 +50,7 @@ process PHILOSOPHER_DATABASE {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        philosopher: \$(philosopher --version)
+        blastsummary: \$(blastsummary --version)
     END_VERSIONS
     """
 }
