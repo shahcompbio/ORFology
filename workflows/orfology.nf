@@ -77,6 +77,9 @@ workflow ORFOLOGY {
     // count proteins by category
     if (params.categorize_proteins) {
         CLASSIFYPROTEINS(info_table_ch)
+        ch_multiqc_files = ch_multiqc_files
+            .mix(CLASSIFYPROTEINS.out.counts_table.map { it[1] })
+            .mix(CLASSIFYPROTEINS.out.count_plot.map { it[1] })
         ch_versions = ch_versions.mix(CLASSIFYPROTEINS.out.versions)
     }
     // prepare diamond database for diamond blast

@@ -27,6 +27,7 @@ process BLASTSUMMARY {
     blastsummary.py \\
         blast_results.txt \\
         blast_fasta.tsv \\
+        ${meta.id}.bitscore_distribution.html \\
         ${meta.id}.diamond_blastp.annotated.tsv \\
         ${args}
     cat <<-END_VERSIONS > versions.yml

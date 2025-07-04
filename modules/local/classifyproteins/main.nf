@@ -29,7 +29,8 @@ process CLASSIFYPROTEINS {
     categorize_proteins.py \\
         info_table.tsv \\
         ${id_args} \\
-        ${name_args}
+        ${name_args} \\
+        ${meta.id}
     # capture version and write YAML in one go, no standalone ver= line
     ( read -r ver < <(tcdo_pg_tools --version) \
     && printf '%s:\\n  tcdo_pg_tools: \"%s\"\\n' \"${task.process}\" \"\$ver\" \

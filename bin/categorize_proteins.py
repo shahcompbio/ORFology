@@ -8,6 +8,7 @@ import sys
 info_path = sys.argv[1]
 protein_id = sys.argv[2]
 protein_name = sys.argv[3]
+meta_id = sys.argv[4]
 # read in info table
 info_df = pd.read_csv(info_path, sep="\t")
 # sort into categories
@@ -33,10 +34,10 @@ c = ma.ZeroWidth(2)
 c.add_left(mp.Labels(counts.index), pad=0.1)
 c.add_right(mp.Numbers(data=counts["sequence"], label="Counts", color="#009FBD"))
 c.render()
-plt.savefig("proteoform_counts_by_category.svg", dpi=300, bbox_inches="tight")
+plt.savefig(f"{meta_id}.counts_by_category_mqc.svg", dpi=300, bbox_inches="tight")
 # output a table of counts
 count_df = pd.DataFrame(counts["sequence"])
 count_df.columns = ["count"]
-count_df.to_csv("counts_by_category.csv")
+count_df.to_csv(f"{meta_id}.counts_by_category.csv")
 # also output annotated info table
-info_df.to_csv("annotated_info_table.tsv", sep="\t", index=False)
+info_df.to_csv(f"{meta_id}.annotated_info_table.tsv", sep="\t", index=False)

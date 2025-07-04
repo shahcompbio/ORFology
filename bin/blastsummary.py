@@ -6,7 +6,8 @@ import numpy as np
 # inputs
 blast_res = sys.argv[1]  # path to blast results file
 blast_fa = sys.argv[2]  # path to fasta that was blasted in tabular format
-all_blast_out = sys.argv[3] # path to annotated blast results
+histogram_out = sys.argv[3]
+all_blast_out = sys.argv[4] # path to annotated blast results
 # read in blast results and fasta
 blast_df = pd.read_csv(blast_res, sep="\t")
 fasta_df = pd.read_csv(blast_fa, sep="\t")
@@ -71,6 +72,6 @@ fig.add_vline(
 )
 fig.update_traces(opacity=0.75)
 fig.update_layout(barmode="overlay")
-fig.write_html("bitscore_distribution.html")
+fig.write_html(histogram_out)
 # export blast results
 blast_df1.to_csv(all_blast_out, sep="\t", index=False)
