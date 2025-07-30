@@ -75,7 +75,7 @@ workflow ORFOLOGY {
         }
     }
     // count proteins by category
-    if (params.categorize_proteins) {
+    if (params.categorize_proteins == true) {
         CLASSIFYPROTEINS(info_table_ch)
         ch_multiqc_files = ch_multiqc_files
             .mix(CLASSIFYPROTEINS.out.counts_table.map { it[1] })
