@@ -38,7 +38,7 @@ process PGTOOLS_FX2TAB {
     //               Simple example: https://github.com/nf-core/modules/blob/818474a292b4860ae8ff88e149fbcda68814114d/modules/nf-core/bcftools/annotate/main.nf#L47-L63
     //               Complex example: https://github.com/nf-core/modules/blob/818474a292b4860ae8ff88e149fbcda68814114d/modules/nf-core/bedtools/split/main.nf#L38-L54
     """
-    
+
     touch ${prefix}.bam
 
     cat <<-END_VERSIONS > versions.yml
