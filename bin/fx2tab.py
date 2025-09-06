@@ -28,10 +28,11 @@ def fasta2df(uniprotfastapath, sample="swissprot"):
             id_terms = ID.split("|")
             if len(id_terms) == 3:
                 db, UniqueID, EntryName = id_terms
+            # handle cases where not in expected format
             else:
-                db, UniqueID, EntryName = "", "", ""
+                db, UniqueID, EntryName = "unknown", "unknown", "unknown"
             # extract gene name
-            geneName = ""
+            geneName = "unknown"
             for term in terms:
                 if term.startswith("GN="):
                     _, geneName = term.split("=")

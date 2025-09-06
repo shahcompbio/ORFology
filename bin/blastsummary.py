@@ -15,20 +15,24 @@ fasta_df = pd.read_csv(blast_fa, sep="\t")
 fa_proteins = set(fasta_df["protein"])
 query_proteins = set(blast_df["qseqid"])
 noblastmatch = list(fa_proteins.difference(query_proteins))
-# make a dataframe to append
-data = []
-for protein in noblastmatch:
-    data.append({
-        "qseqid": protein,
-        "sseqid": "none",
-        "evalue": 1,
-        "bitscore": 10
-    })
-noblast_df = pd.DataFrame(data)
-noblast_df = noblast_df[~noblast_df["qseqid"].str.startswith("sp|")]
-print(len(noblast_df))
-all_blast_df = pd.concat([blast_df, noblast_df])
-all_blast_df = all_blast_df.reset_index(drop=True)
+if len(noblastmatch) == 0:
+    print("all proteins had blast matches")
+    all_blast_df = blast_df
+else:
+    # make a dataframe to append
+    data = []
+    for protein in noblastmatch:
+        data.append({
+            "qseqid": protein,
+            "sseqid": "none",
+            "evalue": 1,
+            "bitscore": 10
+        })
+    noblast_df = pd.DataFrame(data)
+    noblast_df = noblast_df[~noblast_df["qseqid"].str.startswith("sp|")]
+    print(len(noblast_df))
+    all_blast_df = pd.concat([blast_df, noblast_df])
+    all_blast_df = all_blast_df.reset_index(drop=True)
 # sort into categories
 # categorize for plotting ....
 protein_id = "protein"
@@ -41,10 +45,10 @@ for _, row in fasta_df.iterrows():
         categories.append("Alt ORF/canonical transcript")
     elif row["gene_name"].startswith("ENSG"):
         categories.append("Alt splice transcript")
-    elif not row["gene_name"].startswith("ENSG"):
+    elif not row["gene_name"].startswith("ENSG") and row["gene_name"] != "unknown":
         categories.append("Neogene")
     else:
-        categories.append("Other")
+        categories.append("Uncategorized")
 category_df = pd.DataFrame(zip(list(fasta_df["protein"]), categories), columns=["qseqid", "category"])
 category_df = category_df.drop_duplicates()
 # merge dataframes
@@ -54,7 +58,7 @@ noncanon = blast_df1[blast_df1["category"]!="SwissProt"]
 custom_palette = ["#CC3D24", "#F3C558", "#6DAE90", "#30B4CC", "#004F7A"]
 fig = px.histogram(noncanon,
                    title = "Bitscore distribution from Diamond BLASTP",
-                   x="log10_bitscore", 
+                   x="log10_bitscore",
                    color="category", marginal="rug", # can be `box`, `violin`
                    width=900,   # width in pixels
                    height=600,   # height in pixels
