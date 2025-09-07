@@ -5,7 +5,7 @@ process PGTOOLS_FX2TAB {
 
     // TODO nf-core: See section in main README for further information regarding finding and adding container addresses to the section below.
     conda "${moduleDir}/environment.yml"
-    container "quay.io/shahlab_singularity/tcdo_pg_tools:0.0.7b0"
+    container "quay.io/shahlab_singularity/tcdo_pg_tools:0.0.9"
 
     input:
     tuple val(meta), path(fasta), path(philosopher_quant)
