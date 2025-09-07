@@ -4,6 +4,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 include { PGTOOLS_MERGERESULTS     } from '../modules/local/pgtools/mergeresults/main'
+include { PGTOOLS_MERGEFASTA       } from '../modules/local/pgtools/mergefasta/main'
 include { PGTOOLS_FX2TAB ; PGTOOLS_FX2TAB as FX2TAB } from '../modules/local/pgtools/fx2tab/main'
 include { PHILOSOPHER_DATABASE     } from '../modules/local/philosopher/database/main'
 include { DIAMOND_MAKEDB           } from '../modules/nf-core/diamond/makedb/main'
@@ -40,15 +41,15 @@ workflow ORFOLOGY {
     def sampleList = (lines.size() > 1 ? lines[1..-1] : [])
     println("Found ${sampleList.size()} samples")
     if (params.skip_merge || sampleList.size() == 1) {
-        println("Only one sample in samplesheet, skipping merge step")
+        println("Only one sample, skipping merge and peptide filtering steps")
         ch_fasta = ch_samplesheet.map { meta, fasta, quant -> tuple([id: meta.id], fasta) }
         // convert fasta to tabular format
         PGTOOLS_FX2TAB(ch_samplesheet)
         info_table_ch = PGTOOLS_FX2TAB.out.info_table
         ch_versions = ch_versions.mix(PGTOOLS_FX2TAB.out.versions)
     }
-    else {
-        // merge multiple sample
+    else if (params.unique_proteins == true) {
+        // merge multiple sample and filter for proteins with unique peptides
         ch_samplesheet
             .first { meta, fasta, quant ->
                 meta.quant == true
@@ -56,7 +57,7 @@ workflow ORFOLOGY {
             .set { quant_ch }
         // quant_ch.view()
         if (quant_ch.size() != 0) {
-            println("quantification from philosopher present, filtering for proteins with unique peptides")
+            println("merge + filtering for proteins with unique peptides")
             // collect files from samplesheet
             // ch_samplesheet.view()
             merge_input_ch = ch_samplesheet
@@ -73,6 +74,22 @@ workflow ORFOLOGY {
             ch_fasta = PGTOOLS_MERGERESULTS.out.merged_fasta
             info_table_ch = PGTOOLS_MERGERESULTS.out.info_table
         }
+    }
+    else {
+        println("Merging multiple samples without filtering for unique peptides")
+        // collect files from samplesheet
+        merge_input_ch = ch_samplesheet
+            .collect(flat: false)
+            .map { sample ->
+                def meta_list = sample.collect { it[0] }
+                def fasta_list = sample.collect { it[1] }
+                tuple(meta_list, fasta_list)
+            }
+        PGTOOLS_MERGEFASTA([id: 'merge'], merge_input_ch)
+        ch_versions = ch_versions.mix(PGTOOLS_MERGEFASTA.out.versions)
+        // fetch output of merge
+        ch_fasta = PGTOOLS_MERGEFASTA.out.merged_fasta
+        info_table_ch = PGTOOLS_MERGEFASTA.out.info_table
     }
     // count proteins by category
     if (params.categorize_proteins == true) {

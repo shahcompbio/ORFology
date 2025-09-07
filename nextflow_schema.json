@@ -279,6 +279,10 @@
         "categorize_proteins": {
             "type": "boolean",
             "description": "Classify proteins as non-canonical vs canonical based on gene annotation"
+        },
+        "unique_proteins": {
+            "type": "boolean",
+            "description": "use Philosopher tables from Fragpipe to filter for proteins with unique peptides"
         }
     }
 }
