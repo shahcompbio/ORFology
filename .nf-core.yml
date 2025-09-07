@@ -4,6 +4,8 @@ nf_core_version: 3.3.1
 
 lint:
   files_unchanged:
+    - .github/workflows/ci.yml
+    - .github/workflows/nf-test.yml
     - .github/workflows/linting.yml
     - .github/workflows/linting_comment.yml
     - .prettierrc.yml
@@ -35,7 +37,7 @@ lint:
     - .github/workflows/awsfulltest.yml
 
 template:
-  org: tcdo
+  org: shahcompbio
   name: ORFology
   description: protein annotation based on sequence composition
   author: Asher Preska Steinberg
