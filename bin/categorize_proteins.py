@@ -11,6 +11,8 @@ protein_name = sys.argv[3]
 meta_id = sys.argv[4]
 # read in info table
 info_df = pd.read_csv(info_path, sep="\t")
+# drop any rows which are just coming from the SwissProt database (if it was included in the samplesheet)
+info_df = info_df[(info_df["samples"] != "SwissProt") | (info_df["conditions"] != "SwissProt")]
 # sort into categories
 categories = []
 for _, row in info_df.iterrows():
