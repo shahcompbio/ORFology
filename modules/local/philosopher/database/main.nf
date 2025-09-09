@@ -4,7 +4,7 @@ process PHILOSOPHER_DATABASE {
     label 'process_single'
 
     conda "${moduleDir}/environment.yml"
-    container "docker.io/fcyucn/fragpipe:23.1"
+    container "quay.io/shahlab_singularity/fragpipe:23.1"
 
     input:
     val meta

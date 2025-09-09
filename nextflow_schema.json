@@ -252,6 +252,27 @@
                     "description": "Download only reviewed sequences from Swiss-Prot"
                 }
             }
+        },
+        "pgtools_options": {
+            "title": "pgtools options",
+            "type": "object",
+            "description": "Parameters for pgtools merge",
+            "default": "",
+            "properties": {
+                "skip_merge": {
+                    "type": "boolean",
+                    "description": "skip merging of protein fasta from samplesheet"
+                },
+                "unique_proteins": {
+                    "type": "boolean",
+                    "description": "use Philosopher tables from Fragpipe to filter for proteins with unique peptides"
+                },
+                "plot_upset": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "plot upset plot showing intersection of input fasta files"
+                }
+            }
         }
     },
     "allOf": [
@@ -269,20 +290,15 @@
         },
         {
             "$ref": "#/$defs/diamond_blast"
+        },
+        {
+            "$ref": "#/$defs/pgtools_options"
         }
     ],
     "properties": {
-        "skip_merge": {
-            "type": "boolean",
-            "description": "skip merging of protein fasta from samplesheet"
-        },
         "categorize_proteins": {
             "type": "boolean",
             "description": "Classify proteins as non-canonical vs canonical based on gene annotation"
-        },
-        "unique_proteins": {
-            "type": "boolean",
-            "description": "use Philosopher tables from Fragpipe to filter for proteins with unique peptides"
         }
     }
 }
