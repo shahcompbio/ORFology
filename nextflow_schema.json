@@ -250,6 +250,11 @@
                 "reviewed": {
                     "type": "boolean",
                     "description": "Download only reviewed sequences from Swiss-Prot"
+                },
+                "max_evalue": {
+                    "type": "integer",
+                    "default": 10,
+                    "description": "max e-value to return as part of search results"
                 }
             }
         },
