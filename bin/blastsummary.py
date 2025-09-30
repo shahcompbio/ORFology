@@ -25,7 +25,7 @@ else:
         data.append({
             "qseqid": protein,
             "sseqid": "none",
-            "evalue": 1,
+            "evalue": 10,
             "bitscore": 10
         })
     noblast_df = pd.DataFrame(data)
