@@ -15,13 +15,19 @@ info_df = pd.read_csv(info_path, sep="\t")
 info_df = info_df[(info_df["samples"] != "SwissProt") | (info_df["conditions"] != "SwissProt")]
 # sort into categories
 categories = []
+multicategories = [] # in case the ORF fits into multiple categories
 for _, row in info_df.iterrows():
-    if row[protein_id].startswith("sp"):
-        categories.append("SwissProt")
-    elif row[protein_name].startswith("ENST"):
-        categories.append("Alt ORF from canonical transcript")
+    category = []
+    # if there is a swissprot protein included, we categorize this ORF as SwissProt
+    if row[protein_id].str.contains("sp|"):
+        category.append("SwissProt")
+    # else if there is an ensembl transcript included, we categorize as alt ORF
+    # from canonical transcript
+    elif row[protein_id].str.contains("|ENST"):
+        category.append("Alt ORF from canonical transcript")
+    # else if a splice isoform is included, we categorize as alt splice
     elif row["gene_name"].startswith("ENSG"):
-        categories.append("ORF from alt splice transcript")
+        category.append("ORF from alt splice transcript")
     elif not row["gene_name"].startswith("ENSG"):
         categories.append("ORF from neogene")
     else:
