@@ -5,16 +5,16 @@ process PGTOOLS_MERGERESULTS {
 
     // TODO nf-core: See section in main README for further information regarding finding and adding container addresses to the section below.
     conda "${moduleDir}/environment.yml"
-    container "quay.io/shahlab_singularity/tcdo_pg_tools:0.0.9"
+    container "quay.io/shahlab_singularity/tcdo_pg_tools:0.1.0"
 
     input:
     val meta
     tuple val(meta_list), path(fasta_list, stageAs: "fasta??", arity: "1..*"), path(philosopher_list, stageAs: "quant??", arity: "1..*")
 
     output:
-    tuple val(meta), path("info_table.tsv"), emit: info_table
-    tuple val(meta), path("merged.fasta"), emit: merged_fasta
-    tuple val(meta), path("upset_plot.svg"), optional: true, emit: upset_plot
+    tuple val(meta), path("*info_table.tsv"), emit: info_table
+    tuple val(meta), path("*.fasta"), emit: merged_fasta
+    tuple val(meta), path("*upset_plot.svg"), optional: true, emit: upset_plot
     path "versions.yml", emit: versions
 
     when:
@@ -36,7 +36,12 @@ process PGTOOLS_MERGERESULTS {
     """
     echo \"${csv_lines}\" > samplesheet.csv
 
-    tcdo_pg_tools merge-pg-results -i samplesheet.csv ${args}
+    tcdo_pg_tools \\
+    merge-pg-results \\
+    -t ${prefix}_info_table.tsv \\
+    -fa ${prefix}.fasta \\
+    -i samplesheet.csv \\
+    ${args}
     # capture version and write YAML in one go, no standalone ver= line
     ( read -r ver < <(tcdo_pg_tools --version) \
     && printf '%s:\\n  tcdo_pg_tools: \"%s\"\\n' \"${task.process}\" \"\$ver\" \

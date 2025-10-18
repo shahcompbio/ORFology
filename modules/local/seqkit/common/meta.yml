@@ -1,0 +1,59 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+# # TODO nf-core: Add a description of the module and list keywords
+name: "seqkit_common"
+description: write your description here
+keywords:
+  - sort
+  - example
+  - genomics
+tools:
+  ## TODO nf-core: Add a description and other details for the software below
+  - "seqkit":
+      description: "A cross-platform and ultrafast toolkit for FASTA/Q file manipulation."
+      homepage: "https://bioinf.shenwei.me/seqkit"
+      documentation: "https://bioinf.shenwei.me/seqkit"
+      tool_dev_url: "https://github.com/shenwei356/seqkit"
+      doi: ""
+      licence: ["MIT"]
+      identifier: biotools:seqkit
+
+input:
+  # TODO nf-core: Update the information obtained from bio.tools and make sure that it is correct
+  - - meta:
+        type: map
+        description: Groovy Map containing sample information. e.g. `[ id:'sample1'
+          ]`
+    - dna_sequence:
+        type: file
+        description: dna_sequence file
+        pattern: "*.{fasta,fastq}"
+        ontologies:
+          - edam: http://edamontology.org/data_3494 # DNA sequence
+          - edam: http://edamontology.org/format_1929 # FASTA
+          - edam: http://edamontology.org/format_1930 # FASTQ
+output:
+  # TODO nf-core: Update the information obtained from bio.tools and make sure that it is correct
+  dna_sequence:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample information. e.g. `[ id:'sample1'
+            ]`
+      - "*.{fasta,fastq}":
+          type: file
+          description: dna_sequence file
+          pattern: "*.{fasta,fastq}"
+          ontologies:
+            - edam: http://edamontology.org/data_3494 # DNA sequence
+            - edam: http://edamontology.org/format_1929 # FASTA
+            - edam: http://edamontology.org/format_1930 # FASTQ
+  versions:
+    - versions.yml:
+        type: file
+        description: File containing software versions
+        pattern: versions.yml
+        ontologies:
+          - edam: http://edamontology.org/format_3750 # YAML
+authors:
+  - "@apstienberg"
+maintainers:
+  - "@apstienberg"

@@ -1,50 +1,42 @@
-// merge across multiple proteomegenerator fasta files
-process PGTOOLS_MERGEFASTA {
+// get common sequences between fasta files
+process SEQKIT_COMMON {
     tag "${meta.id}"
-    label 'process_single'
+    label 'process_low'
 
     // TODO nf-core: See section in main README for further information regarding finding and adding container addresses to the section below.
     conda "${moduleDir}/environment.yml"
-    container "quay.io/shahlab_singularity/tcdo_pg_tools:0.1.0"
+    container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
+        ? 'https://depot.galaxyproject.org/singularity/seqkit:2.9.0--h9ee0642_0'
+        : 'biocontainers/seqkit:2.9.0--h9ee0642_0'}"
 
     input:
-    val meta
-    tuple val(meta_list), path(fasta_list, stageAs: "fasta??", arity: "1..*")
+    // TODO nf-core: Update the information obtained from bio.tools and make sure that it is correct
+
+    tuple val(meta), path(fasta, arity: "2..*", stageAs: "?/*")
 
     output:
-    tuple val(meta), path("*info_table.tsv"), emit: info_table
-    tuple val(meta), path("*.fasta"), emit: merged_fasta
-    tuple val(meta), path("*upset_plot.svg"), optional: true, emit: upset_plot
+    // TODO nf-core: Update the information obtained from bio.tools and make sure that it is correct
+    tuple val(meta), path("*.fasta"), emit: fasta
     path "versions.yml", emit: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
+    def args = task.ext.args ?: '-s -i -P'
     def prefix = task.ext.prefix ?: "${meta.id}"
-    // build samplesheet from input lists
-    def header = "fasta,sample,condition"
-    def rows = (0..<meta_list.size()).collect { i ->
-        def meta1 = meta_list[i]
-        def fasta = fasta_list[i]
-        "${fasta.name},${meta1.id},${meta1.condition}"
-    }
-    def csv_lines = ([header] + rows).join("\n")
-    // note: escaping newline for bash string
     """
-    echo \"${csv_lines}\" > samplesheet.csv
+    seqkit \\
+        common \\
+        ${args} \\
+        --threads ${task.cpus} \\
+        ${fasta} \\
+        -o ${prefix}.fasta
 
-    tcdo_pg_tools \\
-    merge-fasta \\
-    -i samplesheet.csv \\
-    -t ${prefix}_info_table.tsv \\
-    -fa ${prefix}.fasta \\
-    ${args}
-    # capture version and write YAML in one go, no standalone ver= line
-    ( read -r ver < <(tcdo_pg_tools --version) \
-    && printf '%s:\\n  tcdo_pg_tools: \"%s\"\\n' \"${task.process}\" \"\$ver\" \
-    ) > versions.yml
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        seqkit: \$( seqkit version | sed 's/seqkit v//' )
+    END_VERSIONS
     """
 
     stub:
@@ -60,11 +52,12 @@ process PGTOOLS_MERGEFASTA {
     """
     echo ${args}
 
-    touch ${prefix}.bam
+    touch ${prefix}.fasta
+    touch ${prefix}.fastq
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        pgtools: \$(pgtools --version)
+        seqkit: \$(seqkit --version)
     END_VERSIONS
     """
 }

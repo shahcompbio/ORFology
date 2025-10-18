@@ -8,26 +8,25 @@ import sys
 info_path = sys.argv[1]
 protein_id = sys.argv[2]
 protein_name = sys.argv[3]
-meta_id = sys.argv[4]
+prefix = sys.argv[4]
 # read in info table
 info_df = pd.read_csv(info_path, sep="\t")
 # drop any rows which are just coming from the SwissProt database (if it was included in the samplesheet)
 info_df = info_df[(info_df["samples"] != "SwissProt") | (info_df["conditions"] != "SwissProt")]
 # sort into categories
 categories = []
-multicategories = [] # in case the ORF fits into multiple categories
 for _, row in info_df.iterrows():
     category = []
     # if there is a swissprot protein included, we categorize this ORF as SwissProt
-    if row[protein_id].str.contains("sp|"):
-        category.append("SwissProt")
+    if "sp|" in row[protein_id]:
+        categories.append("SwissProt")
     # else if there is an ensembl transcript included, we categorize as alt ORF
     # from canonical transcript
-    elif row[protein_id].str.contains("|ENST"):
-        category.append("Alt ORF from canonical transcript")
+    elif "|ENST" in row[protein_id]:
+        categories.append("Alt ORF from canonical transcript")
     # else if a splice isoform is included, we categorize as alt splice
     elif row["gene_name"].startswith("ENSG"):
-        category.append("ORF from alt splice transcript")
+        categories.append("ORF from alt splice transcript")
     elif not row["gene_name"].startswith("ENSG"):
         categories.append("ORF from neogene")
     else:
@@ -42,10 +41,10 @@ c = ma.ZeroWidth(2)
 c.add_left(mp.Labels(counts.index), pad=0.1)
 c.add_right(mp.Numbers(data=counts["sequence"], label="Counts", color="#009FBD"))
 c.render()
-plt.savefig(f"{meta_id}.counts_by_category_mqc.svg", dpi=300, bbox_inches="tight")
+plt.savefig(f"{prefix}_counts_by_category.svg", dpi=300, bbox_inches="tight")
 # output a table of counts
 count_df = pd.DataFrame(counts["sequence"])
 count_df.columns = ["count"]
-count_df.to_csv(f"{meta_id}.counts_by_category.csv")
+count_df.to_csv(f"{prefix}_counts_by_category.csv")
 # also output annotated info table
-info_df.to_csv(f"{meta_id}.annotated_info_table.tsv", sep="\t", index=False)
+info_df.to_csv(f"{prefix}_annotated_info_table.tsv", sep="\t", index=False)
