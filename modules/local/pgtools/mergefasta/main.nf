@@ -32,6 +32,7 @@ process PGTOOLS_MERGEFASTA {
     }
     def csv_lines = ([header] + rows).join("\n")
     // note: escaping newline for bash string
+    upset_path = args.contains('--upset') ? "--upset_path ${prefix}_upset_plot.svg" : ''
     """
     echo \"${csv_lines}\" > samplesheet.csv
 
@@ -40,7 +41,8 @@ process PGTOOLS_MERGEFASTA {
     -i samplesheet.csv \\
     -t ${prefix}_info_table.tsv \\
     -fa ${prefix}.fasta \\
-    ${args}
+    ${args} \\
+    ${upset_path}
     # capture version and write YAML in one go, no standalone ver= line
     ( read -r ver < <(tcdo_pg_tools --version) \
     && printf '%s:\\n  tcdo_pg_tools: \"%s\"\\n' \"${task.process}\" \"\$ver\" \

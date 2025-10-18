@@ -7,7 +7,7 @@ include { PGTOOLS_MERGERESULTS   } from '../modules/local/pgtools/mergeresults/m
 include { PGTOOLS_MERGEFASTA     } from '../modules/local/pgtools/mergefasta/main'
 include { PGTOOLS_FX2TAB         } from '../modules/local/pgtools/fx2tab/main'
 include { CLASSIFYPROTEINS       } from '../modules/local/classifyproteins/main'
-include { SEQKIT_COMMON          } from '../modules/local/seqkit/common/main'
+include { CSVTK_JOIN             } from '../modules/nf-core/csvtk/join/main'
 include { BLAST                  } from '../subworkflows/local/blast/main'
 include { MULTIQC                } from '../modules/nf-core/multiqc/main'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
@@ -88,16 +88,15 @@ workflow ORFOLOGY {
             // fetch output of merge
             ch_fasta = ch_fasta.mix(PGTOOLS_MERGERESULTS.out.merged_fasta)
             // make headers in unique proteins fasta the same as the all proteins fasta
-            PGTOOLS_MERGEFASTA.out.merged_fasta
-                .concat(PGTOOLS_MERGERESULTS.out.merged_fasta)
+            PGTOOLS_MERGEFASTA.out.info_table
+                .concat(PGTOOLS_MERGERESULTS.out.info_table)
                 .collect()
-                .map { _meta1, all_fasta, meta2, unique_fasta ->
-                    tuple(meta2, [all_fasta, unique_fasta])
+                .map { meta1, all_tsv, _meta2, unique_tsv ->
+                    tuple(meta1, [all_tsv, unique_tsv])
                 }
-                .set { input_common_ch }
-            input_common_ch.view()
-            SEQKIT_COMMON(input_common_ch)
-            ch_versions = ch_versions.mix(SEQKIT_COMMON.out.versions)
+                .set { join_ch }
+            CSVTK_JOIN(join_ch)
+            ch_versions = ch_versions.mix(CSVTK_JOIN.out.versions)
             info_table_ch = info_table_ch.mix(PGTOOLS_MERGERESULTS.out.info_table)
         }
     }
