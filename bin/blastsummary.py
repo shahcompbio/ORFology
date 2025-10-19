@@ -42,11 +42,11 @@ for _, row in fasta_df.iterrows():
     if "sp|" in row[protein_id]:
         categories.append("SwissProt")
     elif "|ENST" in row[protein_id]:
-        categories.append("Alt ORF/canonical transcript")
+        categories.append("Alt ORF from canonical transcript")
     elif row["gene_name"].startswith("ENSG"):
-        categories.append("Alt splice transcript")
+        categories.append("ORF from alt splice transcript")
     elif not row["gene_name"].startswith("ENSG") and row["gene_name"] != "unknown":
-        categories.append("Neogene")
+        categories.append("ORF from neogene")
     else:
         categories.append("Uncategorized")
 category_df = pd.DataFrame(zip(list(fasta_df["protein"]), categories), columns=["qseqid", "category"])

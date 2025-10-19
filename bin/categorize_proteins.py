@@ -29,7 +29,7 @@ for _, row in info_df.iterrows():
     elif not row["gene_name"].startswith("ENSG"):
         categories.append("ORF from neogene")
     else:
-        categories.append("Other")
+        categories.append("Uncategorized")
 info_df["category"] = categories
 # count number of proteins in each category
 info_df = info_df.drop_duplicates()

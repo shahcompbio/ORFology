@@ -30,21 +30,17 @@
 > [!NOTE]
 > If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/usage/installation) on how to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/usage/introduction#how-to-run-a-pipeline) with `-profile test` before running the workflow on actual data.
 
-<!-- TODO nf-core: Describe the minimum required steps to execute the pipeline, e.g. how to prepare samplesheets.
-     Explain what rows and columns represent. For instance (please edit as appropriate):
-
 First, prepare a samplesheet with your input data that looks as follows:
 
 `samplesheet.csv`:
 
 ```csv
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
+fasta,protein_table,sample,condition
+U937_protein.fas,philosopher/protein.tsv,U937,AML
+swissprot.fasta,,SwissProt,SwissProt
 ```
 
-Each row represents a fastq file (single-end) or a pair of fastq files (paired end).
-
--->
+Each row represents either a proteogenomics sample for which the protein fasta has been produced by proteomegenerator2 or [proteomegenerator3](https://github.com/kentsislab/proteomegenerator3) and a protein table from [philosopher](https://github.com/Nesvilab/philosopher) OR a protein fasta file you would like to analyze.
 
 Now, you can run the pipeline using:
 
@@ -59,6 +55,32 @@ nextflow run shahcompbio/orfology \
 
 > [!WARNING]
 > Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/usage/getting_started/configuration#custom-configuration-files).
+
+## Classify proteins by transcriptomic origins
+
+If you are using orfology to classify proteins by transcriptomic origins which you have detected peptides for with mass spec (with the `categorize_proteins`), we recommend running ORFology with the `--unique_proteins` flag, which will filter your fasta files using the `Indistinguishable Proteins` column from the philosopher `protein.tsv` tables to just include those proteins which are uniquely distinguishable from other proteins. This will ensure that the non-canonical proteins have a combination of peptides which is distinguishable from other proteins in your analysis. These output tables all start with the prefix `unique`. Output tables which not been filtered for uniquely distinguishable proteins have the prefix `all` or `all+unique` (the latter of which are tables of merged outputs from `unique` and `all`). After this proteins are categorized using the following conditional logic:
+
+1. `SwissProt` if it an exact sequence match for a swissprot protein.
+2. `Alt ORF from canonical transcript` if one of the transcripts which the ORF is predicted from has an Ensembl ID.
+3. `ORF from alt spice transcript` if one of the transcripts is a non-canonical splice isoform.
+4. `ORF from neogene` if it is a non-canonical transcript which did not match to a known gene.
+5. `Uncategorized` if it doesn't fit into one of the above categories.
+
+You can run this workflow withthe following command:
+
+```bash
+nextflow run shahcompbio/orfology \
+   -profile <docker/singularity/.../institute> \
+   --input samplesheet.csv \
+   --categorize_proteins \
+   --unique_proteins \
+   --outdir <OUTDIR>
+```
+
+Key outputs here are:
+
+1. `classifyproteins/unique_proteins_merged_annotated_info_table.tsv`: proteins are stratified by category and contains information about which samples they appeared in.
+2. `blastsummary_pgtools_merged/unique_proteins_merged.tsv`: Contains results from the diamond blastp search, merged on the results of the table described in 1.
 
 ## Credits
 
