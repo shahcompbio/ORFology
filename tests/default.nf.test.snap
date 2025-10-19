@@ -62,9 +62,7 @@
                 "UP000005640.dmnd:md5,921cf72fb066bba37e5b53dc1fdc8e2a",
                 "snap25a.txt:md5,0d7d1d74dea635962cc23f88af066b6a",
                 "snap25b.txt:md5,4403722d3ee6aab073e0b5289c15ab33",
-                "info_table.tsv:md5,ac8fe6c8908599637409bb1a4471f43a",
                 "multiqc_citations.txt:md5,4c806e63a283ec1b7e78cdae3a923d4f",
-                "info_table.tsv:md5,3e6be180279da7d16eb643ae5af13864",
                 "2025-10-19-isoforms-UP000005640.fas:md5,8c39fa80d3f1d4c17ec676aa625b88c9"
             ]
         ],
@@ -72,6 +70,6 @@
             "nf-test": "0.9.3",
             "nextflow": "25.04.8"
         },
-        "timestamp": "2025-10-19T18:18:42.554317"
+        "timestamp": "2025-10-19T18:41:09.045983"
     }
 }
