@@ -1,4 +1,4 @@
-# tcdo/orfology: Output
+# shahcompbio/orfology: Output
 
 ## Introduction
 

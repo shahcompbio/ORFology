@@ -1,9 +1,13 @@
-repository_type: pipeline
-
-nf_core_version: 3.3.1
-
 lint:
+  actions_schema_validation: false
+  files_exist: false
   files_unchanged:
+    - .github/workflows/ci.yml
+    - .github/workflows/nf-test.yml
+    - .github/workflows/linting.yml
+    - .github/workflows/linting_comment.yml
+    - .prettierrc.yml
+    - .prettierignore
     - CODE_OF_CONDUCT.md
     - assets/nf-core-orfology_logo_light.png
     - docs/images/nf-core-orfology_logo_light.png
@@ -13,30 +17,19 @@ lint:
     - .github/PULL_REQUEST_TEMPLATE.md
     - assets/email_template.txt
     - docs/README.md
-  nextflow_config:
-    - manifest.name
-    - manifest.homePage
-    - validation.help.beforeText
-    - validation.help.afterText
-    - validation.summary.beforeText
-    - validation.summary.afterText
   multiqc_config:
     - report_comment
-  files_exist:
-    - CODE_OF_CONDUCT.md
-    - assets/nf-core-orfology_logo_light.png
-    - docs/images/nf-core-orfology_logo_light.png
-    - docs/images/nf-core-orfology_logo_dark.png
-    - .github/ISSUE_TEMPLATE/config.yml
-    - .github/workflows/awstest.yml
-    - .github/workflows/awsfulltest.yml
-
+  nextflow_config: false
+  nf_test_content: false
+  rocrate_readme_sync: false
+nf_core_version: 3.4.1
+repository_type: pipeline
 template:
-  org: tcdo
-  name: ORFology
-  description: protein annotation based on sequence composition
   author: Asher Preska Steinberg
-  version: 1.0.0dev
-  force: true
-  outdir: .
+  description: protein annotation based on sequence composition
+  force: false
   is_nfcore: false
+  name: ORFology
+  org: shahcompbio
+  outdir: .
+  version: 1.0.0dev

@@ -1,9 +1,9 @@
 #!/usr/bin/env nextflow
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    tcdo/orfology
+    shahcompbio/orfology
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Github : https://github.com/tcdo/orfology
+    Github : https://github.com/shahcompbio/orfology
 ----------------------------------------------------------------------------------------
 */
 
@@ -38,7 +38,7 @@ params.fasta = getGenomeAttribute('fasta')
 //
 // WORKFLOW: Run main analysis pipeline depending on type of input
 //
-workflow TCDO_ORFOLOGY {
+workflow SHAHCOMPBIO_ORFOLOGY {
 
     take:
     samplesheet // channel: samplesheet read in from --input
@@ -72,13 +72,16 @@ workflow {
         params.monochrome_logs,
         args,
         params.outdir,
-        params.input
+        params.input,
+        params.help,
+        params.help_full,
+        params.show_hidden
     )
 
     //
     // WORKFLOW: Run main workflow
     //
-    TCDO_ORFOLOGY (
+    SHAHCOMPBIO_ORFOLOGY (
         PIPELINE_INITIALISATION.out.samplesheet
     )
     //
@@ -91,7 +94,7 @@ workflow {
         params.outdir,
         params.monochrome_logs,
         params.hook_url,
-        TCDO_ORFOLOGY.out.multiqc_report
+        SHAHCOMPBIO_ORFOLOGY.out.multiqc_report
     )
 }
 
