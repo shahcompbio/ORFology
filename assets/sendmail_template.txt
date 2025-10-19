@@ -9,12 +9,12 @@ Content-Type: text/html; charset=utf-8
 $email_html
 
 --nfcoremimeboundary
-Content-Type: image/png;name="tcdo-orfology_logo.png"
+Content-Type: image/png;name="shahcompbio-orfology_logo.png"
 Content-Transfer-Encoding: base64
 Content-ID: <nfcorepipelinelogo>
-Content-Disposition: inline; filename="tcdo-orfology_logo_light.png"
+Content-Disposition: inline; filename="shahcompbio-orfology_logo_light.png"
 
-<% out << new File("$projectDir/assets/tcdo-orfology_logo_light.png").
+<% out << new File("$projectDir/assets/shahcompbio-orfology_logo_light.png").
     bytes.
     encodeBase64().
     toString().

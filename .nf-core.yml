@@ -1,7 +1,3 @@
-repository_type: pipeline
-
-nf_core_version: 3.3.1
-
 lint:
   actions_schema_validation: false
   files_exist: false
@@ -29,11 +25,16 @@ lint:
     - report_comment
 
 template:
-  org: shahcompbio
-  name: ORFology
-  description: protein annotation based on sequence composition
   author: Asher Preska Steinberg
-  version: 1.0.0dev
-  force: true
-  outdir: .
+  description: protein annotation based on sequence composition
+  force: false
   is_nfcore: false
+  name: ORFology
+  org: shahcompbio
+  outdir: .
+  version: 1.0.0dev
+  nextflow_config: false
+  nf_test_content: false
+  rocrate_readme_sync: false
+nf_core_version: 3.4.1
+repository_type: pipeline

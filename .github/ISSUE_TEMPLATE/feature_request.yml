@@ -1,5 +1,5 @@
 name: Feature request
-description: Suggest an idea for the tcdo/orfology pipeline
+description: Suggest an idea for the shahcompbio/orfology pipeline
 labels: enhancement
 body:
   - type: textarea

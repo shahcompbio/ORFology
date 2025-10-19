@@ -1,10 +1,10 @@
 Run Name: $runName
 
 <% if (success){
-    out << "## tcdo/orfology execution completed successfully! ##"
+    out << "## shahcompbio/orfology execution completed successfully! ##"
 } else {
     out << """####################################################
-## tcdo/orfology execution completed unsuccessfully! ##
+## shahcompbio/orfology execution completed unsuccessfully! ##
 ####################################################
 The exit status of the task that caused the workflow execution to fail was: $exitStatus.
 The full error message was:
@@ -27,5 +27,5 @@ Pipeline Configuration:
 <% out << summary.collect{ k,v -> " - $k: $v" }.join("\n") %>
 
 --
-tcdo/orfology
-https://github.com/tcdo/orfology
+shahcompbio/orfology
+https://github.com/shahcompbio/orfology
