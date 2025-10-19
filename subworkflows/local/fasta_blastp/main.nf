@@ -4,11 +4,13 @@ include { PHILOSOPHER_DATABASE     } from '../../../modules/local/philosopher/da
 include { DIAMOND_MAKEDB           } from '../../../modules/nf-core/diamond/makedb/main'
 include { DIAMOND_BLASTP           } from '../../../modules/nf-core/diamond/blastp/main'
 include { BLASTSUMMARY             } from '../../../modules/local/blastsummary/main'
+include { CSVTK_JOIN               } from '../../../modules/nf-core/csvtk/join/main'
 
-workflow BLAST {
+workflow FASTA_BLASTP {
     take:
-    ch_fasta // channel: [ val(meta), [ fasta ] ]
-    blast_db // path to diamond blast database if it already exists
+    ch_fasta      // channel: [ val(meta), [ fasta ] ]
+    blast_db      // path to diamond blast database if it already exists
+    info_table_ch // channel: [val(meta), [tsv]]
 
     main:
 
@@ -34,8 +36,18 @@ workflow BLAST {
     summary_ch = DIAMOND_BLASTP.out.txt.combine(FX2TAB.out.info_table, by: 0)
     BLASTSUMMARY(summary_ch)
     ch_versions = ch_versions.mix(BLASTSUMMARY.out.versions)
+    // join blast info with stats on sample recurrence
+    BLASTSUMMARY.out.tsv
+        .join(info_table_ch, by: 0)
+        .map { meta, blast_tsv, pg_tsv ->
+            tuple(meta, [blast_tsv, pg_tsv])
+        }
+        .set { join_ch }
+    CSVTK_JOIN(join_ch)
+    ch_versions = ch_versions.mix(CSVTK_JOIN.out.versions.first())
 
     emit:
-    blast_results = BLASTSUMMARY.out.tsv // channel: [ (meta), tsv]
-    versions      = ch_versions // channel: [ versions.yml ]
+    blast_results         = BLASTSUMMARY.out.tsv // channel: [ (meta), tsv]
+    blast_pgtools_results = CSVTK_JOIN.out.csv // channel [(meta), csv]
+    versions              = ch_versions // channel: [ versions.yml ]
 }

@@ -6,9 +6,9 @@
 include { PGTOOLS_MERGERESULTS   } from '../modules/local/pgtools/mergeresults/main'
 include { PGTOOLS_MERGEFASTA     } from '../modules/local/pgtools/mergefasta/main'
 include { PGTOOLS_FX2TAB         } from '../modules/local/pgtools/fx2tab/main'
-include { CLASSIFYPROTEINS       } from '../modules/local/classifyproteins/main'
 include { CSVTK_JOIN             } from '../modules/nf-core/csvtk/join/main'
-include { BLAST                  } from '../subworkflows/local/blast/main'
+include { TSV_CLASSIFYPROTEINS   } from '../subworkflows/local/tsv_classifyproteins/main'
+include { FASTA_BLASTP           } from '../subworkflows/local/fasta_blastp/main'
 include { MULTIQC                } from '../modules/nf-core/multiqc/main'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -95,6 +95,7 @@ workflow ORFOLOGY {
                     tuple(meta1, [all_tsv, unique_tsv])
                 }
                 .set { join_ch }
+            // join_ch.view()
             CSVTK_JOIN(join_ch)
             ch_versions = ch_versions.mix(CSVTK_JOIN.out.versions)
             info_table_ch = info_table_ch.mix(PGTOOLS_MERGERESULTS.out.info_table)
@@ -105,12 +106,12 @@ workflow ORFOLOGY {
     // run classify proteins
     // count proteins by category
     if (params.categorize_proteins == true) {
-        CLASSIFYPROTEINS(info_table_ch)
-        ch_versions = ch_versions.mix(CLASSIFYPROTEINS.out.versions.first())
+        TSV_CLASSIFYPROTEINS(info_table_ch)
+        ch_versions = ch_versions.mix(TSV_CLASSIFYPROTEINS.out.versions)
     }
     // run diamond blast
-    // BLAST(ch_fasta, params.blast_db)
-    // ch_versions = ch_versions.mix(BLAST.out.versions)
+    FASTA_BLASTP(ch_fasta, params.blast_db, info_table_ch)
+    ch_versions = ch_versions.mix(FASTA_BLASTP.out.versions)
     //
     // Collate and save software versions
     //

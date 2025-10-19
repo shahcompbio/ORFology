@@ -16,7 +16,6 @@ info_df = info_df[(info_df["samples"] != "SwissProt") | (info_df["conditions"] !
 # sort into categories
 categories = []
 for _, row in info_df.iterrows():
-    category = []
     # if there is a swissprot protein included, we categorize this ORF as SwissProt
     if "sp|" in row[protein_id]:
         categories.append("SwissProt")
