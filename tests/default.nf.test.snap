@@ -57,14 +57,12 @@
                 "pipeline_info/orfology_software_mqc_versions.yml"
             ],
             [
-                "snap25a_bitscore_distribution.html:md5,4e58ec02ffb73a1d0c42ef0ed20efdaf",
                 "snap25a_diamond_blastp.annotated.tsv:md5,48876fb15c2b95a0f1dd3411d5243a78",
-                "snap25b_bitscore_distribution.html:md5,0489e54fc22c7ca0153b4efdd0426f44",
                 "snap25b_diamond_blastp.annotated.tsv:md5,ae8208cf1ad23a3ee6f61b19a4342d67",
                 "UP000005640.dmnd:md5,921cf72fb066bba37e5b53dc1fdc8e2a",
                 "snap25a.txt:md5,0d7d1d74dea635962cc23f88af066b6a",
                 "snap25b.txt:md5,4403722d3ee6aab073e0b5289c15ab33",
-                "info_table.tsv:md5,3e6be180279da7d16eb643ae5af13864",
+                "info_table.tsv:md5,ac8fe6c8908599637409bb1a4471f43a",
                 "multiqc_citations.txt:md5,4c806e63a283ec1b7e78cdae3a923d4f",
                 "info_table.tsv:md5,3e6be180279da7d16eb643ae5af13864",
                 "2025-10-19-isoforms-UP000005640.fas:md5,8c39fa80d3f1d4c17ec676aa625b88c9"
@@ -74,6 +72,6 @@
             "nf-test": "0.9.3",
             "nextflow": "25.04.8"
         },
-        "timestamp": "2025-10-19T17:59:21.030146"
+        "timestamp": "2025-10-19T18:18:42.554317"
     }
 }
