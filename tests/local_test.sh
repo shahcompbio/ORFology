@@ -1,6 +1,4 @@
 #!/bin/bash
-## activate nf-core conda environment
-source $HOME/miniforge3/bin/activate env_nf
 ## specify params
 outdir=$HOME/Library/CloudStorage/OneDrive-MemorialSloanKetteringCancerCenter/AMLproteogenomics/APS032_ORFology_test/251016_PG3_AML_cell_lines_results
 pipelinedir=$HOME/VSCodeProjects/orfology
@@ -9,7 +7,7 @@ mkdir -p ${outdir}
 cd ${outdir}
 
 nextflow run ${pipelinedir}/main.nf \
-    -profile arm,docker \
+    -profile emulate_amd64,docker \
     -work-dir ${outdir}/work \
     --outdir ${outdir} \
     --input ${samplesheet} \

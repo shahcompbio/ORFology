@@ -1,0 +1,79 @@
+{
+    "-profile test": {
+        "content": [
+            {
+                "BLASTSUMMARY": {
+                    "python": "3.12.10",
+                    "pandas": "2.3.0",
+                    "numpy": "2.3.1",
+                    "plotly": "6.2.0"
+                },
+                "DIAMOND_BLASTP": {
+                    "diamond": "2.1.12"
+                },
+                "DIAMOND_MAKEDB": {
+                    "diamond": "2.1.12"
+                },
+                "FX2TAB": {
+                    "pandas": "2.3.2"
+                },
+                "PGTOOLS_FX2TAB": {
+                    "pandas": "2.3.2"
+                },
+                "PHILOSOPHER_DATABASE": {
+                    "philosopher": "5.1.2"
+                },
+                "Workflow": {
+                    "shahcompbio/orfology": "v1.0.0dev"
+                }
+            },
+            [
+                "blastsummary",
+                "blastsummary/snap25a_bitscore_distribution.html",
+                "blastsummary/snap25a_diamond_blastp.annotated.tsv",
+                "blastsummary/snap25b_bitscore_distribution.html",
+                "blastsummary/snap25b_diamond_blastp.annotated.tsv",
+                "diamond",
+                "diamond/UP000005640.dmnd",
+                "diamond/snap25a.txt",
+                "diamond/snap25b.txt",
+                "fx2tab",
+                "fx2tab/info_table.tsv",
+                "multiqc",
+                "multiqc/multiqc_data",
+                "multiqc/multiqc_data/llms-full.txt",
+                "multiqc/multiqc_data/multiqc.log",
+                "multiqc/multiqc_data/multiqc.parquet",
+                "multiqc/multiqc_data/multiqc_citations.txt",
+                "multiqc/multiqc_data/multiqc_data.json",
+                "multiqc/multiqc_data/multiqc_software_versions.txt",
+                "multiqc/multiqc_data/multiqc_sources.txt",
+                "multiqc/multiqc_report.html",
+                "pgtools",
+                "pgtools/info_table.tsv",
+                "philosopher",
+                "philosopher/2025-10-19-isoforms-UP000005640.fas",
+                "pipeline_info",
+                "pipeline_info/orfology_software_mqc_versions.yml"
+            ],
+            [
+                "snap25a_bitscore_distribution.html:md5,4fe760e48ddbc95493e3d5d711c6b6c5",
+                "snap25a_diamond_blastp.annotated.tsv:md5,48876fb15c2b95a0f1dd3411d5243a78",
+                "snap25b_bitscore_distribution.html:md5,2ae3ce3f7e06ee879876da14b49bbd1a",
+                "snap25b_diamond_blastp.annotated.tsv:md5,ae8208cf1ad23a3ee6f61b19a4342d67",
+                "UP000005640.dmnd:md5,921cf72fb066bba37e5b53dc1fdc8e2a",
+                "snap25a.txt:md5,0d7d1d74dea635962cc23f88af066b6a",
+                "snap25b.txt:md5,4403722d3ee6aab073e0b5289c15ab33",
+                "info_table.tsv:md5,ac8fe6c8908599637409bb1a4471f43a",
+                "multiqc_citations.txt:md5,4c806e63a283ec1b7e78cdae3a923d4f",
+                "info_table.tsv:md5,3e6be180279da7d16eb643ae5af13864",
+                "2025-10-19-isoforms-UP000005640.fas:md5,8c39fa80d3f1d4c17ec676aa625b88c9"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.04.8"
+        },
+        "timestamp": "2025-10-19T17:21:25.934155"
+    }
+}

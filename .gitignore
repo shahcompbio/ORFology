@@ -9,3 +9,5 @@ testing*
 null/
 .vscode/
 .vscode/settings.json
+.nf-test/*
+.nf-test.log
