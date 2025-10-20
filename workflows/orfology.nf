@@ -106,7 +106,7 @@ workflow ORFOLOGY {
     // run classify proteins
     // count proteins by category
     if (params.categorize_proteins == true) {
-        TSV_CLASSIFYPROTEINS(info_table_ch)
+        TSV_CLASSIFYPROTEINS(info_table_ch, params.unique_proteins)
         ch_versions = ch_versions.mix(TSV_CLASSIFYPROTEINS.out.versions)
     }
     // run diamond blast
