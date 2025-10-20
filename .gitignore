@@ -7,3 +7,7 @@ testing/
 testing*
 *.pyc
 null/
+.vscode/
+.vscode/settings.json
+.nf-test/*
+.nf-test.log

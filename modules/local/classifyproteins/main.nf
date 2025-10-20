@@ -23,14 +23,14 @@ process CLASSIFYPROTEINS {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def id_args = meta.id == "merge" ? "protein_ids" : "protein"
-    def name_args = meta.id == "merge" ? "protein_name" : "entry_name"
+    def id_args = meta.id == "merged" ? "protein_ids" : "protein"
+    def name_args = meta.id == "merged" ? "protein_name" : "entry_name"
     """
     categorize_proteins.py \\
         info_table.tsv \\
         ${id_args} \\
         ${name_args} \\
-        ${meta.id}
+        ${prefix}
     # capture version and write YAML in one go, no standalone ver= line
     ( read -r ver < <(tcdo_pg_tools --version) \
     && printf '%s:\\n  tcdo_pg_tools: \"%s\"\\n' \"${task.process}\" \"\$ver\" \

@@ -23,7 +23,7 @@ process PGTOOLS_FX2TAB {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    fx2tab.py ${fasta} ${meta.id}
+    fx2tab.py ${fasta} ${prefix}
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         pandas: \$(python -c 'import pandas as pd; print(pd.__version__)')

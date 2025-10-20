@@ -39,41 +39,34 @@ protein_id = "protein"
 protein_name = "entry_name"
 categories = []
 for _, row in fasta_df.iterrows():
-    if row[protein_id].startswith("sp|"):
+    if "sp|" in row[protein_id]:
         categories.append("SwissProt")
-    elif row[protein_name].startswith("ENST"):
-        categories.append("Alt ORF/canonical transcript")
+    elif "|ENST" in row[protein_id]:
+        categories.append("Alt ORF from canonical transcript")
     elif row["gene_name"].startswith("ENSG"):
-        categories.append("Alt splice transcript")
+        categories.append("ORF from alt splice transcript")
     elif not row["gene_name"].startswith("ENSG") and row["gene_name"] != "unknown":
-        categories.append("Neogene")
+        categories.append("ORF from neogene")
     else:
         categories.append("Uncategorized")
 category_df = pd.DataFrame(zip(list(fasta_df["protein"]), categories), columns=["qseqid", "category"])
 category_df = category_df.drop_duplicates()
 # merge dataframes
 blast_df1 = pd.merge(all_blast_df, category_df, on="qseqid", how="left")
-blast_df1["log10_bitscore"] = np.log10(blast_df1["bitscore"])
+blast_df1["-log10_evalue"] = np.log10(blast_df1["evalue"])
+# add a unique identifier column for merge with pgtools results
+blast_df1["unique_identifier"] = blast_df1["qseqid"].str.split("|").str[1]
 noncanon = blast_df1[blast_df1["category"]!="SwissProt"]
 custom_palette = ["#CC3D24", "#F3C558", "#6DAE90", "#30B4CC", "#004F7A"]
 fig = px.histogram(noncanon,
                    title = "Bitscore distribution from Diamond BLASTP",
-                   x="log10_bitscore",
+                   x="-log10_evalue",
                    color="category", marginal="rug", # can be `box`, `violin`
                    width=900,   # width in pixels
                    height=600,   # height in pixels
                    color_discrete_sequence=custom_palette[0:3],
                    hover_data=noncanon.columns)
 
-# Add vertical line at log10(bitscore) = 2 (i.e., bitscore = 100)
-fig.add_vline(
-    x=2,
-    line_width=2,
-    line_dash="dash",
-    line_color=custom_palette[3],
-    annotation_text="S < 100 (weak alignment)",
-    annotation_position="top right"
-)
 fig.update_traces(opacity=0.75)
 fig.update_layout(barmode="overlay")
 fig.write_html(histogram_out)

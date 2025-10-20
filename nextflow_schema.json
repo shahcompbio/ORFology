@@ -304,6 +304,14 @@
         "categorize_proteins": {
             "type": "boolean",
             "description": "Classify proteins as non-canonical vs canonical based on gene annotation"
+        },
+        "help_full": {
+            "type": "boolean",
+            "description": "Show full help options"
+        },
+        "show_hidden": {
+            "type": "boolean",
+            "description": "show hidden parameters"
         }
     }
 }

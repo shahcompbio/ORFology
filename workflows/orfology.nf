@@ -3,19 +3,17 @@
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { PGTOOLS_MERGERESULTS     } from '../modules/local/pgtools/mergeresults/main'
-include { PGTOOLS_MERGEFASTA       } from '../modules/local/pgtools/mergefasta/main'
-include { PGTOOLS_FX2TAB ; PGTOOLS_FX2TAB as FX2TAB } from '../modules/local/pgtools/fx2tab/main'
-include { PHILOSOPHER_DATABASE     } from '../modules/local/philosopher/database/main'
-include { DIAMOND_MAKEDB           } from '../modules/nf-core/diamond/makedb/main'
-include { DIAMOND_BLASTP           } from '../modules/nf-core/diamond/blastp/main'
-include { CLASSIFYPROTEINS         } from '../modules/local/classifyproteins/main'
-include { BLASTSUMMARY             } from '../modules/local/blastsummary/main'
-include { MULTIQC                  } from '../modules/nf-core/multiqc/main'
-include { paramsSummaryMap         } from 'plugin/nf-schema'
-include { paramsSummaryMultiqc     } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { softwareVersionsToYAML   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { methodsDescriptionText   } from '../subworkflows/local/utils_nfcore_orfology_pipeline'
+include { PGTOOLS_MERGERESULTS   } from '../modules/local/pgtools/mergeresults/main'
+include { PGTOOLS_MERGEFASTA     } from '../modules/local/pgtools/mergefasta/main'
+include { PGTOOLS_FX2TAB         } from '../modules/local/pgtools/fx2tab/main'
+include { CSVTK_JOIN             } from '../modules/nf-core/csvtk/join/main'
+include { TSV_CLASSIFYPROTEINS   } from '../subworkflows/local/tsv_classifyproteins/main'
+include { FASTA_BLASTP           } from '../subworkflows/local/fasta_blastp/main'
+include { MULTIQC                } from '../modules/nf-core/multiqc/main'
+include { paramsSummaryMap       } from 'plugin/nf-schema'
+include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_orfology_pipeline'
 
 
 /*
@@ -48,7 +46,24 @@ workflow ORFOLOGY {
         info_table_ch = PGTOOLS_FX2TAB.out.info_table
         ch_versions = ch_versions.mix(PGTOOLS_FX2TAB.out.versions)
     }
-    else if (params.unique_proteins == true) {
+    else {
+        println("Merging all proteins from multiple samples")
+        // collect files from samplesheet
+        merge_input_ch = ch_samplesheet
+            .collect(flat: false)
+            .map { sample ->
+                def meta_list = sample.collect { it[0] }
+                def fasta_list = sample.collect { it[1] }
+                tuple(meta_list, fasta_list)
+            }
+        PGTOOLS_MERGEFASTA([id: "merged", condition: "all_proteins"], merge_input_ch)
+        ch_versions = ch_versions.mix(PGTOOLS_MERGEFASTA.out.versions)
+        // fetch output of merge
+        ch_fasta = PGTOOLS_MERGEFASTA.out.merged_fasta
+        info_table_ch = PGTOOLS_MERGEFASTA.out.info_table
+    }
+    // filter for unique proteins
+    if (params.unique_proteins == true) {
         // merge multiple sample and filter for proteins with unique peptides
         ch_samplesheet
             .first { meta, fasta, quant ->
@@ -57,7 +72,7 @@ workflow ORFOLOGY {
             .set { quant_ch }
         // quant_ch.view()
         if (quant_ch.size() != 0) {
-            println("merge + filtering for proteins with unique peptides")
+            println("merge + filtering for uniquely distinguishable proteins")
             // collect files from samplesheet
             // ch_samplesheet.view()
             merge_input_ch = ch_samplesheet
@@ -68,70 +83,35 @@ workflow ORFOLOGY {
                     def philosopher_list = sample.collect { it[2] }
                     tuple(meta_list, fasta_list, philosopher_list)
                 }
-            PGTOOLS_MERGERESULTS([id: 'merge'], merge_input_ch)
+            PGTOOLS_MERGERESULTS([id: 'merged', condition: 'unique_proteins'], merge_input_ch)
             ch_versions = ch_versions.mix(PGTOOLS_MERGERESULTS.out.versions)
             // fetch output of merge
-            ch_fasta = PGTOOLS_MERGERESULTS.out.merged_fasta
-            info_table_ch = PGTOOLS_MERGERESULTS.out.info_table
+            ch_fasta = ch_fasta.mix(PGTOOLS_MERGERESULTS.out.merged_fasta)
+            // make headers in unique proteins fasta the same as the all proteins fasta
+            PGTOOLS_MERGEFASTA.out.info_table
+                .concat(PGTOOLS_MERGERESULTS.out.info_table)
+                .collect()
+                .map { meta1, all_tsv, _meta2, unique_tsv ->
+                    tuple(meta1, [all_tsv, unique_tsv])
+                }
+                .set { join_ch }
+            // join_ch.view()
+            CSVTK_JOIN(join_ch)
+            ch_versions = ch_versions.mix(CSVTK_JOIN.out.versions)
+            info_table_ch = info_table_ch.mix(PGTOOLS_MERGERESULTS.out.info_table)
         }
     }
-    else {
-        println("Merging multiple samples without filtering for unique peptides")
-        // collect files from samplesheet
-        merge_input_ch = ch_samplesheet
-            .collect(flat: false)
-            .map { sample ->
-                def meta_list = sample.collect { it[0] }
-                def fasta_list = sample.collect { it[1] }
-                tuple(meta_list, fasta_list)
-            }
-        PGTOOLS_MERGEFASTA([id: 'merge'], merge_input_ch)
-        ch_versions = ch_versions.mix(PGTOOLS_MERGEFASTA.out.versions)
-        // fetch output of merge
-        ch_fasta = PGTOOLS_MERGEFASTA.out.merged_fasta
-        info_table_ch = PGTOOLS_MERGEFASTA.out.info_table
-    }
+    // ch_fasta.view()
+    // info_table_ch.view()
+    // run classify proteins
     // count proteins by category
     if (params.categorize_proteins == true) {
-        CLASSIFYPROTEINS(info_table_ch)
-        ch_multiqc_files = ch_multiqc_files
-            .mix(CLASSIFYPROTEINS.out.counts_table.map { it[1] })
-            .mix(CLASSIFYPROTEINS.out.count_plot.map { it[1] })
-        ch_versions = ch_versions.mix(CLASSIFYPROTEINS.out.versions)
+        TSV_CLASSIFYPROTEINS(info_table_ch)
+        ch_versions = ch_versions.mix(TSV_CLASSIFYPROTEINS.out.versions)
     }
-    // prepare diamond database for diamond blast
-    if (!params.blast_db) {
-        PHILOSOPHER_DATABASE([id: params.uniprot_proteome], params.reviewed, params.isoforms)
-        blast_fasta = PHILOSOPHER_DATABASE.out.fasta
-        ch_versions = ch_versions.mix(PHILOSOPHER_DATABASE.out.versions)
-    }
-    else {
-        blast_fasta = [[id: 'db_prep'], blast_fasta]
-    }
-    DIAMOND_MAKEDB(blast_fasta, [], [], [])
-    ch_versions = ch_versions.mix(DIAMOND_MAKEDB.out.versions)
-    DIAMOND_BLASTP(ch_fasta, DIAMOND_MAKEDB.out.db, 6, [])
-    ch_versions = ch_versions.mix(DIAMOND_BLASTP.out.versions)
-    // convert fastas to tabular format to pick out proteins missing from blast search
-    FX2TAB(ch_fasta.map { meta, fasta -> tuple(meta, fasta, []) })
-    ch_versions = ch_versions.mix(FX2TAB.out.versions)
-    // summarize blast results
-    summary_ch = DIAMOND_BLASTP.out.txt.combine(FX2TAB.out.info_table, by: 0)
-    BLASTSUMMARY(summary_ch)
-    ch_versions = ch_versions.mix(BLASTSUMMARY.out.versions)
-    // skip this for now, will revisit later
-    // cat_ch = ch_fasta.map { meta, fasta -> tuple(meta, [fasta, params.blast_db]) }
-    // CAT_CAT(cat_ch)
-    // ch_versions = ch_versions.mix(CAT_CAT.out.versions)
-    // DIAMOND_CLUSTER(CAT_CAT.out.file_out)
-    // ch_versions = ch_versions.mix(DIAMOND_CLUSTER.out.versions)
-    // realign_ch = CAT_CAT.out.file_out.join(DIAMOND_CLUSTER.out.tsv)
-    // DIAMOND_REALIGN(realign_ch)
-    // notes to self:
-    // incorporate gget
-    // incorporate pfam
-    // incorporate elm
-
+    // run diamond blast
+    FASTA_BLASTP(ch_fasta, params.blast_db, info_table_ch)
+    ch_versions = ch_versions.mix(FASTA_BLASTP.out.versions)
     //
     // Collate and save software versions
     //

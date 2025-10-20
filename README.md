@@ -1,11 +1,12 @@
 # shahcompbio/orfology
 
-[![GitHub Actions CI Status](https://github.com/shahcompbio/orfology/actions/workflows/ci.yml/badge.svg)](https://github.com/shahcompbio/orfology/actions/workflows/ci.yml)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new/shahcompbio/orfology)
+[![GitHub Actions CI Status](https://github.com/shahcompbio/orfology/actions/workflows/nf-test.yml/badge.svg)](https://github.com/shahcompbio/orfology/actions/workflows/nf-test.yml)
 [![GitHub Actions Linting Status](https://github.com/shahcompbio/orfology/actions/workflows/linting.yml/badge.svg)](https://github.com/shahcompbio/orfology/actions/workflows/linting.yml)[![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.XXXXXXX)
 [![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)
 
-[![Nextflow](https://img.shields.io/badge/version-%E2%89%A524.04.2-green?style=flat&logo=nextflow&logoColor=white&color=%230DC09D&link=https%3A%2F%2Fnextflow.io)](https://www.nextflow.io/)
-[![nf-core template version](https://img.shields.io/badge/nf--core_template-3.3.1-green?style=flat&logo=nfcore&logoColor=white&color=%2324B064&link=https%3A%2F%2Fnf-co.re)](https://github.com/nf-core/tools/releases/tag/3.3.1)
+[![Nextflow](https://img.shields.io/badge/version-%E2%89%A525.04.0-green?style=flat&logo=nextflow&logoColor=white&color=%230DC09D&link=https%3A%2F%2Fnextflow.io)](https://www.nextflow.io/)
+[![nf-core template version](https://img.shields.io/badge/nf--core_template-3.4.1-green?style=flat&logo=nfcore&logoColor=white&color=%2324B064&link=https%3A%2F%2Fnf-co.re)](https://github.com/nf-core/tools/releases/tag/3.4.1)
 [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
 [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
 [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
@@ -30,21 +31,17 @@
 > [!NOTE]
 > If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/usage/installation) on how to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/usage/introduction#how-to-run-a-pipeline) with `-profile test` before running the workflow on actual data.
 
-<!-- TODO nf-core: Describe the minimum required steps to execute the pipeline, e.g. how to prepare samplesheets.
-     Explain what rows and columns represent. For instance (please edit as appropriate):
-
 First, prepare a samplesheet with your input data that looks as follows:
 
 `samplesheet.csv`:
 
 ```csv
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
+fasta,protein_table,sample,condition
+U937_protein.fas,philosopher/protein.tsv,U937,AML
+swissprot.fasta,,SwissProt,SwissProt
 ```
 
-Each row represents a fastq file (single-end) or a pair of fastq files (paired end).
-
--->
+Each row represents either a proteogenomics sample for which the protein fasta has been produced by proteomegenerator2 or [proteomegenerator3](https://github.com/kentsislab/proteomegenerator3) and a protein table from [philosopher](https://github.com/Nesvilab/philosopher) OR a protein fasta file you would like to analyze.
 
 Now, you can run the pipeline using:
 
@@ -59,6 +56,32 @@ nextflow run shahcompbio/orfology \
 
 > [!WARNING]
 > Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/usage/getting_started/configuration#custom-configuration-files).
+
+## Classify proteins by transcriptomic origins
+
+If you are using orfology to classify proteins by transcriptomic origins which you have detected peptides for with mass spec (with the `categorize_proteins`), we recommend running ORFology with the `--unique_proteins` flag, which will filter your fasta files using the `Indistinguishable Proteins` column from the philosopher `protein.tsv` tables to just include those proteins which are uniquely distinguishable from other proteins. This will ensure that the non-canonical proteins have a combination of peptides which is distinguishable from other proteins in your analysis. These output tables all start with the prefix `unique`. Output tables which not been filtered for uniquely distinguishable proteins have the prefix `all` or `all+unique` (the latter of which are tables of merged outputs from `unique` and `all`). After this proteins are categorized using the following conditional logic:
+
+1. `SwissProt` if it an exact sequence match for a swissprot protein.
+2. `Alt ORF from canonical transcript` if one of the transcripts which the ORF is predicted from has an Ensembl ID.
+3. `ORF from alt spice transcript` if one of the transcripts is a non-canonical splice isoform.
+4. `ORF from neogene` if it is a non-canonical transcript which did not match to a known gene.
+5. `Uncategorized` if it doesn't fit into one of the above categories.
+
+You can run this workflow withthe following command:
+
+```bash
+nextflow run shahcompbio/orfology \
+   -profile <docker/singularity/.../institute> \
+   --input samplesheet.csv \
+   --categorize_proteins \
+   --unique_proteins \
+   --outdir <OUTDIR>
+```
+
+Key outputs here are:
+
+1. `classifyproteins/unique_proteins_merged_annotated_info_table.tsv`: proteins are stratified by category and contains information about which samples they appeared in.
+2. `blastsummary_pgtools_merged/unique_proteins_merged.tsv`: Contains results from the diamond blastp search, merged on the results of the table described in 1.
 
 ## Credits
 
