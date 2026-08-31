@@ -24,7 +24,7 @@ workflow TSV_CLASSIFYPROTEINS {
                 tuple(meta1, [all_tsv, unique_tsv])
             }
             .set { join_ch }
-        join_ch.view()
+        // join_ch.view()
         CSVTK_JOIN(join_ch)
         tsv_ch = CSVTK_JOIN.out.csv
         ch_versions = ch_versions.mix(CSVTK_JOIN.out.versions)

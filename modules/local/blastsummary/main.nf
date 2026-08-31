@@ -42,17 +42,16 @@ process BLASTSUMMARY {
     stub:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    // TODO nf-core: A stub section should mimic the execution of the original module as best as possible
-    //               Have a look at the following examples:
-    //               Simple example: https://github.com/nf-core/modules/blob/818474a292b4860ae8ff88e149fbcda68814114d/modules/nf-core/bcftools/annotate/main.nf#L47-L63
-    //               Complex example: https://github.com/nf-core/modules/blob/818474a292b4860ae8ff88e149fbcda68814114d/modules/nf-core/bedtools/split/main.nf#L38-L54
     """
-
-    touch ${prefix}.bam
+    touch ${prefix}_bitscore_distribution.html
+    touch ${prefix}_diamond_blastp.annotated.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        blastsummary: \$(blastsummary --version)
+        python: \$(python --version | sed 's/Python //g')
+        pandas: \$(python -c "import pandas; print(pandas.__version__)")
+        numpy: \$(python -c "import numpy; print(numpy.__version__)")
+        plotly: \$(python -c "import plotly; print(plotly.__version__)")
     END_VERSIONS
     """
 }
