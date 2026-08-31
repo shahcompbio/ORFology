@@ -4,7 +4,11 @@ nextflow_pipeline {
     script "../main.nf"
     tag "pipeline"
 
-    test("-profile test") {
+    // stub run: the default path downloads the UniProt proteome, which is far
+    // too slow for CI. The blast_db test covers the pipeline for real.
+    test("-profile test -stub") {
+
+        options "-stub"
 
         when {
             params {
