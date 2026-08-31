@@ -43,12 +43,13 @@ for _, row in fasta_df.iterrows():
         categories.append("SwissProt")
     elif "|ENST" in row[protein_id]:
         categories.append("Alt ORF from canonical transcript")
+    # gene_name is read as NaN when a protein has no gene annotation
+    elif not isinstance(row["gene_name"], str) or row["gene_name"] == "unknown":
+        categories.append("Uncategorized")
     elif row["gene_name"].startswith("ENSG"):
         categories.append("ORF from alt splice transcript")
-    elif not row["gene_name"].startswith("ENSG") and row["gene_name"] != "unknown":
-        categories.append("ORF from neogene")
     else:
-        categories.append("Uncategorized")
+        categories.append("ORF from neogene")
 category_df = pd.DataFrame(zip(list(fasta_df["protein"]), categories), columns=["qseqid", "category"])
 category_df = category_df.drop_duplicates()
 # merge dataframes
