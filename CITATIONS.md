@@ -10,9 +10,21 @@
 
 ## Pipeline tools
 
-- [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
+- [DIAMOND](https://pubmed.ncbi.nlm.nih.gov/33828273/)
 
-> Andrews, S. (2010). FastQC: A Quality Control Tool for High Throughput Sequence Data [Online].
+> Buchfink B, Reuter K, Drost HG. Sensitive protein alignments at tree-of-life scale using DIAMOND. Nat Methods. 2021 Apr;18(4):366-368. doi: 10.1038/s41592-021-01101-x. Epub 2021 Apr 7. PubMed PMID: 33828273; PubMed Central PMCID: PMC8026399.
+
+- [Philosopher](https://pubmed.ncbi.nlm.nih.gov/32669682/)
+
+> da Veiga Leprevost F, Haynes SE, Avtonomov DM, Chang HY, Shanmugam AK, Mellacheruvu D, Kong AT, Nesvizhskii AI. Philosopher: a versatile toolkit for shotgun proteomics data analysis. Nat Methods. 2020 Sep;17(9):869-870. doi: 10.1038/s41592-020-0912-y. Epub 2020 Jul 15. PubMed PMID: 32669682; PubMed Central PMCID: PMC7509848.
+
+- [UniProt](https://pubmed.ncbi.nlm.nih.gov/36408920/)
+
+> The UniProt Consortium. UniProt: the Universal Protein Knowledgebase in 2023. Nucleic Acids Res. 2023 Jan 6;51(D1):D523-D531. doi: 10.1093/nar/gkac1052. PubMed PMID: 36408920; PubMed Central PMCID: PMC9825514.
+
+- [csvtk](https://github.com/shenwei356/csvtk)
+
+- [tcdo_pg_tools](https://github.com/shahcompbio/tcdo_pg_tools)
 
 - [MultiQC](https://pubmed.ncbi.nlm.nih.gov/27312411/)
 
