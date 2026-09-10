@@ -32,7 +32,7 @@ template:
   name: ORFology
   org: shahcompbio
   outdir: .
-  version: 1.0.0dev
+  version: 1.0.0
   nextflow_config: false
   nf_test_content: false
   rocrate_readme_sync: false

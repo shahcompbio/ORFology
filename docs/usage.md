@@ -4,58 +4,43 @@
 
 ## Introduction
 
-<!-- TODO nf-core: Add documentation about anything specific to running your pipeline. For general topics, please point to (and add to) the main nf-core website. -->
+ORFology annotates proteins predicted by proteogenomics workflows. It merges protein fastas across samples, optionally filters them for uniquely distinguishable proteins and classifies them by transcriptomic origin, then searches them against a reference protein database with DIAMOND BLASTP.
 
 ## Samplesheet input
 
-You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row as shown in the examples below.
+You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with a header row as shown in the examples below.
 
 ```bash
 --input '[path to samplesheet file]'
 ```
 
-### Multiple runs of the same sample
-
-The `sample` identifiers have to be the same when you have re-sequenced the same sample more than once e.g. to increase sequencing depth. The pipeline will concatenate the raw reads before performing any downstream analysis. Below is an example for the same sample sequenced across 3 lanes:
-
-```csv title="samplesheet.csv"
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
-CONTROL_REP1,AEG588A1_S1_L003_R1_001.fastq.gz,AEG588A1_S1_L003_R2_001.fastq.gz
-CONTROL_REP1,AEG588A1_S1_L004_R1_001.fastq.gz,AEG588A1_S1_L004_R2_001.fastq.gz
-```
-
 ### Full samplesheet
 
-The pipeline will auto-detect whether a sample is single- or paired-end using the information provided in the samplesheet. The samplesheet can have as many columns as you desire, however, there is a strict requirement for the first 3 columns to match those defined in the table below.
-
-A final samplesheet file consisting of both single- and paired-end data may look something like the one below. This is for 6 samples, where `TREATMENT_REP3` has been sequenced twice.
+Each row is either a proteogenomics sample (a protein fasta, optionally with its Philosopher protein table) or a reference protein fasta you want included in the analysis.
 
 ```csv title="samplesheet.csv"
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
-CONTROL_REP2,AEG588A2_S2_L002_R1_001.fastq.gz,AEG588A2_S2_L002_R2_001.fastq.gz
-CONTROL_REP3,AEG588A3_S3_L002_R1_001.fastq.gz,AEG588A3_S3_L002_R2_001.fastq.gz
-TREATMENT_REP1,AEG588A4_S4_L003_R1_001.fastq.gz,
-TREATMENT_REP2,AEG588A5_S5_L003_R1_001.fastq.gz,
-TREATMENT_REP3,AEG588A6_S6_L003_R1_001.fastq.gz,
-TREATMENT_REP3,AEG588A6_S6_L004_R1_001.fastq.gz,
+sample,fasta,protein_table,condition
+U937,U937_protein.fas,U937/philosopher/protein.tsv,AML
+MOLM13,MOLM13_protein.fas,MOLM13/philosopher/protein.tsv,AML
+CD34,CD34_protein.fas,CD34/philosopher/protein.tsv,control
+SwissProt,swissprot.fasta,,SwissProt
 ```
 
-| Column    | Description                                                                                                                                                                            |
-| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sample`  | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). |
-| `fastq_1` | Full path to FastQ file for Illumina short reads 1. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
-| `fastq_2` | Full path to FastQ file for Illumina short reads 2. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
+| Column          | Description                                                                                                                                                            |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sample`        | Required. Custom sample name. Spaces in sample names are automatically converted to underscores (`_`).                                                                 |
+| `fasta`         | Required. Full path to the protein fasta for this sample. Must have extension `.fa`, `.fasta`, `.fas`, or their `.gz` equivalents.                                     |
+| `protein_table` | Optional. Full path to the protein quantification table from [Philosopher](https://github.com/Nesvilab/philosopher) (`protein.tsv`). Required for `--unique_proteins`. |
+| `condition`     | Optional. Group label for the sample (e.g. `AML`, `control`). Used to prefix output files.                                                                             |
 
-An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
+Rows without a `protein_table` are still merged and searched; they are simply skipped when filtering for uniquely distinguishable proteins.
 
 ## Running the pipeline
 
 The typical command for running the pipeline is as follows:
 
 ```bash
-nextflow run shahcompbio/orfology --input ./samplesheet.csv --outdir ./results --genome GRCh37 -profile docker
+nextflow run shahcompbio/orfology --input ./samplesheet.csv --outdir ./results -profile docker
 ```
 
 This will launch the pipeline with the `docker` configuration profile. See below for more information about profiles.
@@ -85,13 +70,17 @@ nextflow run shahcompbio/orfology -profile docker -params-file params.yaml
 with:
 
 ```yaml title="params.yaml"
-input: './samplesheet.csv'
-outdir: './results/'
-genome: 'GRCh37'
-<...>
+input: "./samplesheet.csv"
+outdir: "./results/"
+blast_db: "./uniprot_combined.fasta"
+categorize_proteins: true
+unique_proteins: true
 ```
 
 You can also generate such `YAML`/`JSON` files via [nf-core/launch](https://nf-co.re/launch).
+
+> [!TIP]
+> On recent Nextflow versions, bare boolean flags on the command line (e.g. `--categorize_proteins --unique_proteins`) can be parsed as strings and rejected by parameter validation with `Value is [string] but should be [boolean]`. Passing them in a `-params-file`, as above, avoids this.
 
 ### Updating the pipeline
 
@@ -113,6 +102,27 @@ To further assist in reproducibility, you can use share and reuse [parameter fil
 
 > [!TIP]
 > If you wish to share such profile (such as upload as supplementary material for academic publications), make sure to NOT include cluster specific paths to files, nor institutional specific profiles.
+
+## Pipeline parameters
+
+### Database options
+
+| Parameter            | Default       | Description                                                                                                         |
+| -------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `--blast_db`         | `null`        | Path to a protein fasta to search against. When set, no UniProt proteome is downloaded.                             |
+| `--uniprot_proteome` | `UP000005640` | UniProt proteome ID to download and search against when `--blast_db` is not set. The default is the human proteome. |
+| `--reviewed`         | `false`       | Download only reviewed (Swiss-Prot) sequences.                                                                      |
+| `--isoforms`         | `true`        | Include isoform sequences in the download.                                                                          |
+| `--max_evalue`       | `10`          | Maximum e-value returned by the DIAMOND search.                                                                     |
+
+### Analysis options
+
+| Parameter               | Default | Description                                                                                                                                    |
+| ----------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--categorize_proteins` | `false` | Classify proteins by transcriptomic origin. See [the README](../README.md#classify-proteins-by-transcriptomic-origins) for the categories.     |
+| `--unique_proteins`     | `false` | Use the `Indistinguishable Proteins` column of the Philosopher tables to also produce results restricted to uniquely distinguishable proteins. |
+| `--skip_merge`          | `false` | Skip merging protein fastas across samples. Merging is skipped automatically when the samplesheet has a single sample.                         |
+| `--plot_upset`          | `true`  | Produce an UpSet plot of the intersection between input fastas.                                                                                |
 
 ## Core Nextflow arguments
 

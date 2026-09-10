@@ -14,17 +14,17 @@
 
 ## Introduction
 
-**shahcompbio/orfology** is a bioinformatics pipeline that ...
+**shahcompbio/orfology** is a bioinformatics pipeline that annotates proteins predicted by proteogenomics workflows. It takes protein fasta files from one or more samples (typically produced by [proteomegenerator3](https://github.com/kentsislab/proteomegenerator3)), optionally paired with [Philosopher](https://github.com/Nesvilab/philosopher) protein quantification tables, merges them into a single non-redundant set, searches them against a reference protein database with DIAMOND BLASTP, and classifies each ORF by its transcriptomic origin. The main outputs are annotated protein tables reporting, for every protein, which samples it was detected in, its closest match in the reference database, and whether it is canonical, an alternative ORF, or novel.
 
-<!-- TODO nf-core:
-   Complete this sentence with a 2-3 sentence summary of what types of data the pipeline ingests, a brief overview of the
-   major pipeline sections and the types of output it produces. You're giving an overview to someone new
-   to nf-core here, in 15-20 seconds. For an example, see https://github.com/nf-core/rnaseq/blob/master/README.md#introduction
--->
+Pipeline steps:
 
-<!-- TODO nf-core: Include a figure that guides the user through the major workflow steps. Many nf-core
-     workflows use the "tube map" design for that. See https://nf-co.re/docs/guidelines/graphic_design/workflow_diagrams#examples for examples.   -->
-<!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))2. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
+1. Merge protein fastas and info tables across samples ([`tcdo_pg_tools`](https://github.com/shahcompbio/tcdo_pg_tools))
+2. Optionally filter for proteins with uniquely distinguishable peptides using Philosopher tables (`--unique_proteins`)
+3. Optionally classify proteins by transcriptomic origin (`--categorize_proteins`)
+4. Prepare a protein database, either downloaded from UniProt ([`Philosopher`](https://github.com/Nesvilab/philosopher)) or supplied with `--blast_db`
+5. Search proteins against that database ([`DIAMOND`](https://github.com/bbuchfink/diamond))
+6. Summarise the search and join it with the per-sample protein tables
+7. Aggregate software versions and reports ([`MultiQC`](http://multiqc.info/))
 
 ## Usage
 
@@ -41,16 +41,24 @@ U937_protein.fas,philosopher/protein.tsv,U937,AML
 swissprot.fasta,,SwissProt,SwissProt
 ```
 
-Each row represents either a proteogenomics sample for which the protein fasta has been produced by proteomegenerator2 or [proteomegenerator3](https://github.com/kentsislab/proteomegenerator3) and a protein table from [philosopher](https://github.com/Nesvilab/philosopher) OR a protein fasta file you would like to analyze.
+Each row represents either a proteogenomics sample for which the protein fasta has been produced by proteomegenerator2 or [proteomegenerator3](https://github.com/kentsislab/proteomegenerator3) and a protein table from [philosopher](https://github.com/Nesvilab/philosopher) OR a protein fasta file you would like to analyze. `sample` and `fasta` are required; `protein_table` is only needed for samples you want to filter with `--unique_proteins`.
 
 Now, you can run the pipeline using:
-
-<!-- TODO nf-core: update the following command to include all required parameters for a minimal example -->
 
 ```bash
 nextflow run shahcompbio/orfology \
    -profile <docker/singularity/.../institute> \
    --input samplesheet.csv \
+   --outdir <OUTDIR>
+```
+
+By default the pipeline downloads a UniProt reference proteome (`--uniprot_proteome`, default `UP000005640` for human) to search against. To search against a database of your own instead, pass a protein fasta with `--blast_db`:
+
+```bash
+nextflow run shahcompbio/orfology \
+   -profile <docker/singularity/.../institute> \
+   --input samplesheet.csv \
+   --blast_db uniprot_combined.fasta \
    --outdir <OUTDIR>
 ```
 
@@ -63,11 +71,11 @@ If you are using orfology to classify proteins by transcriptomic origins which y
 
 1. `SwissProt` if it an exact sequence match for a swissprot protein.
 2. `Alt ORF from canonical transcript` if one of the transcripts which the ORF is predicted from has an Ensembl ID.
-3. `ORF from alt spice transcript` if one of the transcripts is a non-canonical splice isoform.
+3. `ORF from alt splice transcript` if one of the transcripts is a non-canonical splice isoform.
 4. `ORF from neogene` if it is a non-canonical transcript which did not match to a known gene.
-5. `Uncategorized` if it doesn't fit into one of the above categories.
+5. `Uncategorized` if it doesn't fit into one of the above categories, including proteins with no gene annotation at all.
 
-You can run this workflow withthe following command:
+You can run this workflow with the following command:
 
 ```bash
 nextflow run shahcompbio/orfology \
@@ -86,10 +94,6 @@ Key outputs here are:
 ## Credits
 
 shahcompbio/orfology was originally written by Asher Preska Steinberg.
-
-We thank the following people for their extensive assistance in the development of this pipeline:
-
-<!-- TODO nf-core: If applicable, make list of people who have also contributed -->
 
 ## Contributions and Support
 
