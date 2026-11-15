@@ -6,6 +6,7 @@ lint:
   rocrate_readme_sync: false
   actions_ci: false
   files_unchanged:
+    - .github/workflows/branch.yml
     - .github/workflows/ci.yml
     - .github/workflows/nf-test.yml
     - .github/workflows/linting.yml
@@ -32,7 +33,7 @@ template:
   name: ORFology
   org: shahcompbio
   outdir: .
-  version: 1.0.0dev
+  version: 1.0.0
   nextflow_config: false
   nf_test_content: false
   rocrate_readme_sync: false

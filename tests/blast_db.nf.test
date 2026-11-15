@@ -1,0 +1,23 @@
+nextflow_pipeline {
+
+    name "Test pipeline with custom blast_db"
+    script "../main.nf"
+    tag "pipeline"
+    tag "blast_db"
+
+    test("-profile test --blast_db --categorize_proteins --unique_proteins") {
+
+        when {
+            params {
+                outdir              = "$outputDir"
+                blast_db            = "https://raw.githubusercontent.com/nf-core/test-datasets/kmerseek/testdata/snap25a_mxe_exon_human.fa"
+                categorize_proteins = true
+                unique_proteins     = true
+            }
+        }
+
+        then {
+            assert workflow.success
+        }
+    }
+}

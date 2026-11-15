@@ -23,7 +23,7 @@ workflow FASTA_BLASTP {
         ch_versions = ch_versions.mix(PHILOSOPHER_DATABASE.out.versions)
     }
     else {
-        blast_fasta = [[id: 'db_prep'], blast_fasta]
+        blast_fasta = [[id: 'db_prep'], file(blast_db, checkIfExists: true)]
     }
     DIAMOND_MAKEDB(blast_fasta, [], [], [])
     ch_versions = ch_versions.mix(DIAMOND_MAKEDB.out.versions)

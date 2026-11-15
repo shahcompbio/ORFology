@@ -24,12 +24,13 @@ for _, row in info_df.iterrows():
     elif "|ENST" in row[protein_id]:
         categories.append("Alt ORF from canonical transcript")
     # else if a splice isoform is included, we categorize as alt splice
+    # gene_name is read as NaN when a protein has no gene annotation
+    elif not isinstance(row["gene_name"], str):
+        categories.append("Uncategorized")
     elif row["gene_name"].startswith("ENSG"):
         categories.append("ORF from alt splice transcript")
-    elif not row["gene_name"].startswith("ENSG"):
-        categories.append("ORF from neogene")
     else:
-        categories.append("Uncategorized")
+        categories.append("ORF from neogene")
 info_df["category"] = categories
 # count number of proteins in each category
 info_df = info_df.drop_duplicates()
