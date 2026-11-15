@@ -52,6 +52,8 @@ nextflow run shahcompbio/orfology \
    --outdir <OUTDIR>
 ```
 
+For more details and further functionality, please refer to the [usage documentation](docs/usage.md) and the [parameter documentation](nextflow_schema.json).
+
 By default the pipeline downloads a UniProt reference proteome (`--uniprot_proteome`, default `UP000005640` for human) to search against. To search against a database of your own instead, pass a protein fasta with `--blast_db`:
 
 ```bash
@@ -90,6 +92,10 @@ Key outputs here are:
 
 1. `classifyproteins/unique_proteins_merged_annotated_info_table.tsv`: proteins are stratified by category and contains information about which samples they appeared in.
 2. `blastsummary_pgtools_merged/unique_proteins_merged.tsv`: Contains results from the diamond blastp search, merged on the results of the table described in 1.
+
+## Pipeline output
+
+For details about the output files and reports, please refer to the [output documentation](docs/output.md).
 
 ## Credits
 

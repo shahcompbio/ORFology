@@ -2,11 +2,11 @@
 
 ## Introduction
 
-This document describes the output produced by the pipeline. Most of the plots are taken from the MultiQC report, which summarises results at the end of the pipeline.
+This document describes the output produced by the pipeline.
 
 The directories listed below will be created in the results directory after the pipeline has finished. All paths are relative to the top-level results directory.
 
-Output files are prefixed with the sample or merge name, and with the sample `condition` where one is given. Merged results use the prefixes `all_proteins_merged` (every protein) and `unique_proteins_merged` (only uniquely distinguishable proteins, produced with `--unique_proteins`). Tables named `all+unique_...` join the two.
+When the samplesheet has more than one sample (and `--skip_merge` is not set), merged results use the prefixes `all_proteins_merged` (every protein) and `unique_proteins_merged` (only uniquely distinguishable proteins, produced with `--unique_proteins`). Tables named `all+unique_...` join the two. With a single sample or `--skip_merge`, outputs are prefixed with the sample name instead.
 
 ## Pipeline overview
 
@@ -30,8 +30,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
   - `*_merged_info_table.tsv`: table of the merged proteins, recording which samples and conditions each protein was detected in.
   - `all+unique_proteins_*_info_table.tsv`: the `all` and `unique` info tables joined into one (only with `--unique_proteins`).
   - `*_upset_plot.svg`: UpSet plot of the intersection between input fastas (only with `--plot_upset`).
-- `fx2tab/`
-  - `info_table.tsv`: tabular representation of the input fasta, used when a single sample is analysed or `--skip_merge` is set.
+  - `info_table.tsv`: tabular representation of the fasta(s) searched with DIAMOND, used to report proteins with no BLASTP hit. With a single sample or `--skip_merge`, this is also the info table used downstream in place of the merged one.
 
 </details>
 

@@ -6,6 +6,7 @@ lint:
   rocrate_readme_sync: false
   actions_ci: false
   files_unchanged:
+    - .github/workflows/branch.yml
     - .github/workflows/ci.yml
     - .github/workflows/nf-test.yml
     - .github/workflows/linting.yml

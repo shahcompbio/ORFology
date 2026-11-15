@@ -28,10 +28,10 @@ SwissProt,swissprot.fasta,,SwissProt
 
 | Column          | Description                                                                                                                                                            |
 | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sample`        | Required. Custom sample name. Spaces in sample names are automatically converted to underscores (`_`).                                                                 |
+| `sample`        | Required. Custom sample name. Cannot contain spaces.                                                                                                                   |
 | `fasta`         | Required. Full path to the protein fasta for this sample. Must have extension `.fa`, `.fasta`, `.fas`, or their `.gz` equivalents.                                     |
 | `protein_table` | Optional. Full path to the protein quantification table from [Philosopher](https://github.com/Nesvilab/philosopher) (`protein.tsv`). Required for `--unique_proteins`. |
-| `condition`     | Optional. Group label for the sample (e.g. `AML`, `control`). Used to prefix output files.                                                                             |
+| `condition`     | Optional. Group label for the sample (e.g. `AML`, `control`). Cannot contain spaces. Recorded in the merged info tables.                                               |
 
 Rows without a `protein_table` are still merged and searched; they are simply skipped when filtering for uniquely distinguishable proteins.
 
